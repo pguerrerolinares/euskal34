@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <title>Solve It 3: Retro Shell - Hack It EE34</title>
+        <!--[if lt IE 9]><script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+        <link rel="stylesheet" type="text/css" media="screen" href="/static/css/screen.css">
+        <!--[if IE 6]><link rel="stylesheet" type="text/css" media="screen" href="/static/css/screen_ie6.css"><![endif]-->
+        <script src="/static/js/jquery-1.12.4.min.js" type="text/javascript"></script>
+        <script src="/static/js/scripts.js" type="text/javascript"></script>
+        
+    </head>
+    <body>
+
+        <div id="lorem"><div id="ipsum">
+
+            <p class="acc"><a href="#content">Ir al contenido</a></p>
+
+            <header id="header">
+                <h1>Hack It <span class="whentohack">EE34</span></h1>
+
+                <nav id="nav">
+
+                    <h1 class="acc">Menú principal</h1>
+                    <ul id="nav-main">
+                        <li><a href="/">Introducción</a></li>
+                        <li><a href="/rules">Bases</a></li>
+                        <li><a href="/ranking">Ranking</a></li>
+                        <li><a href="/about">Acerca de</a></li>
+                    </ul>
+
+                </nav>
+
+            </header>
+
+            <div id="content">
+
+                <section id="content-main">
+
+                    
+
+                    <article class="article">
+    <h1>Solve It 3: Retro Shell</h1>
+    <div class="descr">by ontza &bull;
+     Resuelto por
+        <span class="tooltip" href="#" title="Insomnia, w0pr">2</span>
+        equipos
+    
+    </div>
+    
+    <form id="solveform" method="POST" action="/solveit/3/solve">
+        <div>
+            <label>Contraseña</label>
+            <a href="#" onClick="skip()">Saltar nivel</a>
+        </div>
+        
+        <div id="password-box" class="form-input-text"><input type="password" id="password" name="password" autocomplete="off" /></div>
+        
+        <input type="hidden" name="csrf_token" value="7a117932691c18de" />
+        <div id="solve-box"><input type="submit" id="solvebtn" value="Resolver" /></div>
+    </form>
+    <form style="display: none;" id="skipform" method="POST" action="/solveit/3/skip">
+        <input type="hidden" name="csrf_token" value="7a117932691c18de" />
+    </form>
+    
+    <p>Algo se esconde en la siguiente shell:</p>
+    <a href="http://hackit.party.eus:7826/">Shell</a>
+
+
+                    </article>
+
+                </section>
+                <aside id="content-aside">
+                    
+
+
+                    
+                    <section>
+                    
+                        <h1>Usuario</h1>
+                        <p>Tu usuario es <strong>paul</strong>.<br>
+                        <a href="https://login.encounter.eus/">Editar tu perfil</a>  | <a href="/user/logout">Logout</a></p>
+                    
+                    </section>
+                    
+
+                    
+                    <section>
+                        <h1>Equipo</h1>
+                        
+                            <p>Tu equipo es <strong>PeruEsClave</strong>.<br>
+                            
+                            <a href="/team/">Ver tu equipo</a>
+                            
+                        
+                    </section>
+                    
+                    <section>
+                        <h1>Hack It</h1>
+                        <ul>
+                            <li class="solved"><a href="/hackit/1/">Nivel 1 - Easy Peasy</a></li>
+                            <li class="open"><a href="/hackit/2/">Nivel 2 - Bowling Physics</a></li>
+                            <li class="closed">Nivel 3</li>
+                            <li class="closed">Nivel 4</li>
+                            <li class="closed">Nivel 5</li>
+                            <li class="closed">Nivel 6</li>
+                            <li class="closed">Nivel 7</li>
+                        </ul>
+                    </section>
+                    <section>
+                        <h1>Solve It</h1>
+                        <ul>
+                            <li class="solved"><a href="/solveit/1/">Nivel 1 - Singular Calculus</a></li>
+                            <li class="skipped"><a href="/solveit/2/">Nivel 2 - Lost Fest</a></li>
+                            <li class="open"><a href="/solveit/3/">Nivel 3 - Retro Shell</a></li>
+                            <li class="closed">Nivel 4</li>
+                            <li class="closed">Nivel 5</li>
+                            <li class="closed">Nivel 6</li>
+                        </ul>
+                    </section>
+                </aside>
+
+            </div>
+
+            <div id="footer">
+
+                <p>
+                    Hack It EE34 by <a href="mailto:ontza@euskalencounter.org">OntzA</a> &amp; <a href="/about">friends</a>.
+                    Design by <a href="http://www.dreamer.de">Digital Dreamer</a>.<br />
+                    Built with the <a href="https://github.com/marcan/hackit">Hack It Framework</a>
+                    and powered by <a href="http://python.org">Python</a>,
+                    <a href="http://www.postgresql.org/">PostgreSQL</a>,
+                    <a href="http://flask.pocoo.org/">Flask</a>,
+                    <a href="http://www.sqlalchemy.org/">SQLAlchemy</a>,
+                    &amp; more.
+                </p>
+                <p class="debuginfo"><span class="content">Rendered by PID 1921602 on hackit.oob.party.eus at 2026-07-23 22:47:33+00:00 running 250e809ca5e5057d</span><span class="icon">π</span></p>
+            </div>
+
+        </div></div>
+
+    </body>
+</html>

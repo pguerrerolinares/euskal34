@@ -1,0 +1,11 @@
+{
+  "descripcion": "Artefactos del reto Hack It 3 'Tercer Templo' (EE34). No van a git por tamano.",
+  "origen": "imagen de disco TempleOS entregada por el reto; el .raw se regenera desde el qcow2 con: qemu-img convert -O raw temple.qcow2 temple.raw",
+  "assets": [
+    {
+      "name": "temple.qcow2",
+      "path": "temple.qcow2",
+      "sha256": "d66400410ffe165b47cf9cd29f79f8ef042d99a961da83b870ed731b6edc57ac"
+    }
+  ]
+}

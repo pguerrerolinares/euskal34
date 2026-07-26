@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Entornos y editores
+.env
+.DS_Store
+.vscode/
+.idea/
+
+# Artefactos pesados que no se redistribuyen (ROMs, saves, capturas de sesión)
+*.gba
+*.sav
+*.iso
+*.img

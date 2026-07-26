@@ -1,0 +1,164 @@
+:root {
+    --fvwm-bg: #2b4f70;
+    --fvwm-frame-bg: #c0c0c0;
+    --fvwm-title-bg: #000080;
+    --fvwm-title-text: #ffffff;
+    --fvwm-border-light: #ffffff;
+    --fvwm-border-dark: #404040;
+    --fvwm-border-shadow: #000000;
+    --term-bg: #000000;
+    --term-fg: #ffffff;
+    --font-mono: "DejaVu Sans Mono", "Liberation Mono", "Courier New", monospace;
+    --font-ui: "DejaVu Sans", "Helvetica Neue", Arial, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--fvwm-bg);
+    /* Classic X11 desktop stipple background feel */
+    background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 0);
+    background-size: 4px 4px;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    font-family: var(--font-ui);
+    overflow: hidden;
+}
+
+.fvwm-window {
+    width: 100%;
+    max-width: 850px;
+    height: 80vh;
+    background-color: var(--fvwm-frame-bg);
+    border: 3px solid;
+    border-color: var(--fvwm-border-light) var(--fvwm-border-dark) var(--fvwm-border-dark) var(--fvwm-border-light);
+    box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    padding: 3px;
+}
+
+.fvwm-titlebar {
+    background: linear-gradient(to right, #000080, #104e8b);
+    color: var(--fvwm-title-text);
+    padding: 3px 5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: bold;
+    user-select: none;
+    border: 1px solid;
+    border-color: var(--fvwm-border-light) var(--fvwm-border-dark) var(--fvwm-border-dark) var(--fvwm-border-light);
+    margin-bottom: 3px;
+}
+
+.fvwm-btn-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.fvwm-title {
+    flex: 1;
+    text-align: center;
+    font-family: var(--font-ui);
+    letter-spacing: 0.5px;
+}
+
+.fvwm-btn {
+    width: 18px;
+    height: 18px;
+    background-color: var(--fvwm-frame-bg);
+    color: #000000;
+    border: 2px solid;
+    border-color: var(--fvwm-border-light) var(--fvwm-border-dark) var(--fvwm-border-dark) var(--fvwm-border-light);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: bold;
+    line-height: 14px;
+    text-align: center;
+    cursor: pointer;
+    padding: 0;
+    user-select: none;
+}
+
+.fvwm-btn:active {
+    border-color: var(--fvwm-border-dark) var(--fvwm-border-light) var(--fvwm-border-light) var(--fvwm-border-dark);
+    padding-top: 1px;
+    padding-left: 1px;
+}
+
+.connection-status {
+    font-size: 11px;
+    font-weight: normal;
+    padding: 1px 6px;
+    background-color: #555555;
+    color: #ff8888;
+    border: 1px solid #333333;
+    margin-right: 4px;
+}
+
+.connection-status.connected {
+    color: #88ff88;
+}
+
+.fvwm-body {
+    flex: 1;
+    background-color: var(--term-bg);
+    border: 2px solid;
+    border-color: var(--fvwm-border-dark) var(--fvwm-border-light) var(--fvwm-border-light) var(--fvwm-border-dark);
+    padding: 8px;
+    overflow-y: auto;
+    cursor: text;
+}
+
+#terminal-output {
+    display: inline;
+    color: var(--term-fg);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 1.3;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+#output-text {
+    display: inline;
+    white-space: pre-wrap;
+}
+
+.cursor {
+    display: inline;
+    color: var(--term-fg);
+    font-weight: bold;
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+}
+
+/* Custom retro scrollbar */
+.fvwm-body::-webkit-scrollbar {
+    width: 14px;
+}
+
+.fvwm-body::-webkit-scrollbar-track {
+    background: var(--fvwm-frame-bg);
+    border: 1px solid var(--fvwm-border-dark);
+}
+
+.fvwm-body::-webkit-scrollbar-thumb {
+    background: var(--fvwm-frame-bg);
+    border: 2px solid;
+    border-color: var(--fvwm-border-light) var(--fvwm-border-dark) var(--fvwm-border-dark) var(--fvwm-border-light);
+}
