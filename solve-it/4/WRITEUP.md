@@ -459,7 +459,7 @@ cual sin necesidad de la ROM**.
 | `imagenes-isla-fail/` | las nueve capturas de las señales |
 
 Los scripts localizan sus datos junto a sí mismos, así que da igual desde dónde los lances. Los
-fragmentos inline de abajo sí esperan que estés **en este directorio** (`challenges/solve4/`).
+fragmentos inline de abajo sí esperan que estés **en este directorio** (`solve-it/4/`).
 Dependencias: `pillow`, `numpy` y `scipy` para `nightwriting.py`; el resto es Python de serie.
 
 ```bash

@@ -1,46 +1,37 @@
 # Hack It EE34 — Nivel 6 "Classical Music" (rickroll en señal PAL/FM)
 
-Archivo del scratchpad de la sesión del 2026-07-25 (movido aquí desde `/tmp`, que es efímero).
 Autor del reto: **ontza**. URL: `hackit.party.eus/hackit/6/`.
 
 **Estado: parcialmente resuelto.** `Part 1/3 = v1nTag3`. Partes 2/3 sin encontrar tras ~20 enfoques.
 
-El writeup público del nivel, con el análisis de la señal y lo que se descartó, está en
+El writeup del nivel, con el análisis de la señal y todo lo que se descartó, está en
 [`WRITEUP.md`](WRITEUP.md).
 
-## Origen
-
-Este directorio es el scratchpad de aquella sesión, movido desde `/tmp` antes de que se lo llevara
-un reinicio. Los scripts que dependían de rutas absolutas de esa ruta efímera no se versionan: no
-corren en otra máquina, y venderlos como reproducibles sería mentir. Los que quedan son
-autocontenidos.
-
-## Qué hay aquí
+## Qué hay en este directorio
 
 | Fichero | Qué es |
 |---|---|
-| `classical_music.wv` | **El original** (395 MB, WavPack, sample rate falso π×10⁷ Hz). Todo lo demás sale de aquí. |
-| `classical_music_decoded.mp4` | El vídeo PAL demodulado = Rick Astley, *Never Gonna Give You Up*. |
-| `hackit6_part1_caption.png` | El caption del frame 125: `Part 1/3: v1nTag3`. |
-| `hackit6_caption_hunter.mp4`, `caption_hunter.mp4` | Renders para cazar captions (realce de transitorios). |
-| `freeview_*.png` | Renders para free-viewing (la pista falsa del autostereograma). |
-| `frames/`, `tframes/` | Los 250 frames PAL (luma) y su versión de textura/subcarrier. |
-| `*.npy` (8 × 1,2 GB) | Intermedios de señal: `msg_full` (demod FM), `pi_I/Q/amp`, `sep_176`, `sep_201pi`, `am_env`, `subimg_amp`. **Regenerables.** |
-| `out.wav`, `raw.pcm` | Salida cruda de `wvunpack`. Regenerable. |
-| `wvpkg/`, `zbarpkg/` | `.deb` extraídos para tener `wvunpack` y `zbarimg` sin instalar nada. |
-| `vbi_capture.bin`, `barsig.npy` | La pista falsa del "teletexto" (era el artefacto del subcarrier). |
-| `page.html`, `headers.txt`, `wv_headers.txt` | La web del reto y cabeceras HTTP/WavPack. |
+| `WRITEUP.md` | El writeup completo del nivel. |
+| `h6-frame125-raw.png` | El frame 125 recién demodulado, antes de limpiarlo. |
+| `h6-part1-caption.png` | El rótulo que aparece en ese frame: `Part 1/3: v1nTag3`. |
+| `page.html`, `page6_now.html`, `p5.html` | La página del reto tal como la servía el concurso. |
+| `*.py` | Los scripts de análisis: demodulación FM, presupuesto espectral, búsqueda de portadoras, extracción de rótulos, diferencias entre frames. |
 
-Regenerar el pipeline básico (necesita `numpy`/`scipy`; el venv de `vhs-teletext` **no** se conservó):
+## Lo que no está aquí, y por qué
+
+El fichero del reto (`classical_music.wv`, 395 MB) no se redistribuye: es material de *ontza*. Todo
+lo demás que se generó durante el reto —el vídeo PAL demodulado, los 250 frames, ocho ficheros
+`.npy` de 1,2 GB cada uno, los renders para free-viewing y los `.deb` extraídos de `wvunpack` y
+`zbarimg`— suma unos 11 GB y **se regenera desde el `.wv`**. Nada de eso tiene sentido en un repo.
+
+También quedaron fuera diez scripts que llevaban rutas absolutas de la máquina donde se resolvió:
+no corren en ningún otro sitio, y publicarlos como reproducibles sería mentir.
+
+## Regenerar el pipeline básico
+
+Necesita `numpy` y `scipy`. El entorno de `vhs-teletext` **no** se conservó.
 
 ```
-wvpkg/usr/bin/wvunpack -y classical_music.wv -o out.wav   # ffmpeg lo rechaza: sample rate no estándar
+wvunpack -y classical_music.wv -o out.wav   # ffmpeg lo rechaza: sample rate no estándar
 # señal analítica (Hilbert) -> dφ/dt -> reshape a ancho 2011 = 625 líneas × 250 frames PAL
 ```
-
-## Nota de git
-
-Del directorio solo se versionan este README, el writeup y los scripts autocontenidos. Todo el
-binario (~11 GB) está en `.gitignore`, así que la tabla de arriba describe el directorio **en
-local**: buena parte de lo que enumera no está en el repo y se regenera desde el `.wv` con el
-pipeline de abajo.

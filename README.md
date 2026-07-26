@@ -152,6 +152,13 @@ Los writeups son nuestros y los errores también.
 
 Este repositorio se publica bajo licencia **MIT** (ver [LICENSE](LICENSE)). Esa licencia cubre
 **nuestros writeups y scripts** — el análisis, el código de resolución, las herramientas propias.
-**No cubre los retos en sí ni sus materiales** (enunciados, imágenes, ROMs, audios, capturas de los
-propios niveles), que son de **ontza** y el equipo organizador del Hack It, o de terceros cuando el
-reto los cita. Donde un writeup necesita un material así, lo referencia sin redistribuirlo.
+**No cubre los retos en sí ni sus materiales**, que son de **ontza** y el equipo organizador del
+Hack It, o de terceros cuando el reto los cita.
+
+Algunos writeups incluyen la imagen del propio nivel porque sin ella no se entienden: la
+inscripción de Solve It 5, las capturas de ruido de Solve It 6, los PNG de datos de Hack It 2. Son
+de *ontza* y se reproducen solo para explicar su reto.
+
+Lo que **no** se redistribuye es lo que no nos corresponde repartir: las ROMs comerciales de Solve
+It 4 y Hack It 5, el cartel de Solve It 2, la lámina de signos elamitas de Wikimedia Commons y el
+audio de 395 MB de Hack It 6. Cada writeup dice dónde conseguirlo o cómo regenerarlo.
