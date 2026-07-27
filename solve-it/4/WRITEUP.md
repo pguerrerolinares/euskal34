@@ -460,11 +460,20 @@ letras, espacio, punto y salto de línea—, y luego lo pintó mezclando los dos
 Esto cierra el decode: la lectura de los carteles no descansa en cribs francesas ni en corregir
 celdas a mano. Está atada byte a byte a lo que el autor escribió.
 
-Una cautela sobre el orden, que aquí importa porque lo que se lee son instrucciones: **`S1`…`S9` es
-el orden de los ficheros**, que resulta ser también el orden en que los bloques están guardados en la
-ROM. Que `S1` abra —*"bajo el cristal azul, empieza"*— y que `S8` y `S9` cierren encaja con el
-contenido. El orden de los seis pasos intermedios es heredado de esa numeración, no probado sobre el
-mapa.
+El orden importa, porque lo que se lee son instrucciones, y **no hay que deducirlo**: los símbolos
+están escritos a lo largo de la pared y se leen **de izquierda a derecha**, como cualquier texto. Ése
+es el orden de los pasos, y está a la vista de quien esté jugando. Que coincida con `S1`…`S9` —el
+orden de los ficheros, que es también el de los bloques en la ROM— es una **comprobación de más, no
+la fuente**.
+
+Y sale bien: andando dentro del juego la secuencia que dictan —**un paso al sur, cuatro al este, tres
+al sur, seis al oeste, uno al norte, dos al este**— y usando entonces el Dulce Aroma, el camino
+secreto se abre.
+
+Es otra vez el mismo patrón, y conviene señalarlo porque ordena todo el writeup: el análisis del
+binario **confirma lo que el reto ya te enseñaba mirando la pared**. Con esto el nivel queda con los
+tres eslabones verificados por vías independientes — el descifrado contra los bytes de la ROM, el
+orden andándolo, y la contraseña comparando la pantalla del juego con la salida de `keygen.py`.
 
 ## 5. El final del recorrido, y dónde estaba de verdad la pista
 
