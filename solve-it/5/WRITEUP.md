@@ -53,7 +53,7 @@ problema.** Merece la pena decirlo porque durante horas se sospechó de ella, y 
 
 ## 2. El callejón largo: atacar el cifrado sin saber qué sistema es
 
-Con 25 símbolos y 21 palabras, la lectura obvia es "sustitución monoalfabética, texto en
+Con 25 símbolos y 22 palabras, la lectura obvia es "sustitución monoalfabética, texto en
 castellano" (concurso vasco, enunciado en castellano). Y ahí se fueron decenas de scripts:
 análisis de frecuencias, solver de criptograma por patrones contra diccionario, hill-climbing con
 quadgramas, beam search, simulated annealing, constraint solving, cifrado de Hill en varias
@@ -74,7 +74,7 @@ perder tiempo.
 Ante la falta de convergencia, se pasó a fijar **cribs** a mano: adivinar una palabra y propagar
 las letras. Se fijó que una palabra de siete signos era `mientes`, otra `pues`, y más adelante
 —cuando apareció la idea de que el texto pudiera estar en leet— `cu4l` y `v0c3s`. Sobre esas
-anclas se construyó una lectura parcial de las 21 palabras que **parecía sólida**: cada crib
+anclas se construyó una lectura parcial de las 22 palabras que **parecía sólida**: cada crib
 nueva se validaba contra las anteriores (¿es compatible con la biyección? ¿respeta las letras ya
 asignadas?), y como eran compatibles entre sí, el sistema se reforzaba solo.
 
@@ -82,7 +82,7 @@ El problema: **el texto no era castellano**. Todo el edificio era coherente inte
 por completo. Y lo que hace esto tan traicionero es que el criterio de validación —"la crib nueva
 encaja con las anteriores"— **es un criterio real y estaba bien aplicado**. Un conjunto de cribs
 mutuamente compatibles no es evidencia de que el idioma sea el correcto; solo lo es de que las
-cribs no se contradicen. Con 25 símbolos y 21 palabras hay libertad de sobra para construir
+cribs no se contradicen. Con 25 símbolos y 22 palabras hay libertad de sobra para construir
 decenas de sistemas mutuamente compatibles y todos equivocados.
 
 La señal de alarma estaba a la vista y se racionalizó: **ninguna lectura cerraba del todo**.
