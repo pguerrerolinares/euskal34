@@ -28,7 +28,7 @@ El camino, que el reto da entero:
      son ortogonales (se parecen ~1/sqrt(768)=0.036), asi que el termino conocido
      0.1*q se derrama fuera de la diagonal con un ruido de 3.7e-3, 4.4x el ruido
      de fondo real (8.2e-4). El mensaje vale -9.2e-3: 2.5 sigma sobre el derrame
-     (invisible) y 12.1 sigma una vez cancelado.
+     (invisible) y 11.2 sigma una vez cancelado.
   7. Renderizas la matriz entera y el texto se lee. Sin ventanas ni umbrales.
 
   El chunk Whitespace de v.png (v_min=-0.2, v_max=0.2) NO hace falta: repitiendo
@@ -37,7 +37,7 @@ El camino, que el reto da entero:
   su keyword es `h` (constante de Hubble) y llama `q` al contenido de p.png
   (posicion, en notacion hamiltoniana). Dice que magnitud hay en cada fichero.
 
-Por debajo es esteganografia por espectro ensanchado: el autor sumo a 36 filas
+Por debajo es esteganografia por espectro ensanchado: el autor resto a 36 filas
 de v multiplos minusculos de ciertas filas de p, cada una haciendo de portadora.
 En el espacio de la imagen esa senal esta repartida entre 65.536 valores y queda
 bajo el ruido; solo se concentra al proyectar. Su unica huella visible alli es un

@@ -102,6 +102,13 @@ banda D: filas 144-152
 Los pesos por banda, normalizados a la D, salen `3,93 / 1,88 / 2,51 / 1,00`. Cuatro bandas, con
 pesos distintos, perfectamente regulares. Cualquiera diría que ahí hay un payload.
 
+> **Nota (2026-07-28): las trampas de §4 y §5 son de nuestro rodeo, no del reto.** Ninguna de las dos
+> aparece en el camino que el nivel dicta (§6b): ahí el término `<q>_columna` no llega a existir
+> porque nadie hace esa regresión —el coeficiente lo da la diagonal de la primera proyección—, y la
+> pregunta que la autocorrelación contesta mal ni se plantea, porque en vez de buscar estructura
+> dentro del residuo se proyecta. Se conservan porque las lecciones de método valen fuera de aquí,
+> no porque haya que sortearlas para resolver el nivel.
+
 ## 4. Trampa nº 1: un bug de eje del autor fabrica física falsa
 
 El término `<q>_columna` es raro. Un flujo de Hubble se define contra **un** centro, no contra 256
@@ -227,7 +234,7 @@ No es un conejo sacado de la chistera. El nivel lo explica entero, en cuatro pas
 6. **Cancelas eso y vuelves a proyectar.** No es "quitar física": las filas de `q` no son ortogonales
    (se parecen ~1/√768 = 0,036), así que el término conocido `0,1·q` se derrama fuera de la diagonal
    con un ruido de **3,7e-3**, 4,4× el ruido de fondo real (8,2e-4). El mensaje vale −9,2e-3: **2,5σ**
-   sobre el derrame (invisible) y **12,1σ** una vez cancelado.
+   sobre el derrame (invisible) y **11,2σ** una vez cancelado.
 7. **Renderizas la matriz entera y se lee.** Sin ventanas, sin umbrales, sin saber dónde mirar.
 
 ```python
