@@ -1,14 +1,27 @@
 # Hack It EE34 — Nivel 2: "Bowling Physics"
 
-Este writeup es raro, y por eso merece la pena: **todo el trabajo técnico que hicimos fue
-irrelevante para la solución**. Caracterizamos el dataset hasta residuo cero, encontramos un bug
-del generador, corregimos un error de método propio… y la contraseña era un juego de palabras que
-se leía en el título del reto.
-
-Va entero igual, porque los dos hallazgos técnicos son transferibles y porque la lección de marco
-—cuándo dejar de analizar— es más cara que cualquiera de ellos.
+> ## ⚠️ Corrección de fondo (2026-07-27)
+>
+> **La primera versión de este writeup se equivocaba en lo principal.** Decía que el dataset era
+> decoración, que las cuatro bandas del residuo eran ruido del generador y que la contraseña era
+> solo un juego de palabras del título.
+>
+> **La contraseña está escrita con letras dentro de los datos.** Es un bitmap de 36×27 en la matriz
+> de correlación entre las filas del residuo de velocidades y las filas de posiciones: cuatro líneas
+> de 9 píxeles —`M4d` / `F0r` / `mUL` / `4`—. Las "cuatro bandas de nueve filas" que medimos con tres
+> decimales y llamamos ruido **son exactamente esas cuatro líneas de texto**.
+>
+> Reproducible con `python3 solve.py`. El análisis de abajo se conserva íntegro porque es correcto
+> hasta donde llega —y porque el error de interpretación es la parte más instructiva del nivel—,
+> pero léelo sabiendo cómo acaba. Detalle en §6 y §7.
 
 Contraseña: **`M4dF0rmUL4`**.
+
+Lo que hace raro a este writeup: acertamos la contraseña por un camino (un juego de palabras) que
+no tenía nada que ver con el mecanismo real, y el acierto nos hizo archivar el análisis con una
+conclusión falsa dentro. Caracterizamos el dataset hasta el residuo, encontramos un bug del
+generador, corregimos un error de método propio, localizamos la señal al píxel… y escribimos que
+ahí no había nada.
 
 ---
 
@@ -152,50 +165,136 @@ ni mu.
 > **Regla**: la autocorrelación detecta periodicidad, no estructura por eje. Si la pregunta es
 > "¿filas o columnas?", el instrumento es ANOVA. Y `autocorr ≈ 0` **no** descarta offsets por eje.
 
-## 6. El callejón: el payload no era un payload
+## 6. El payload SÍ era un payload
 
-Con el modelo cerrado y las bandas aisladas, quedaba extraer el mensaje. No lo hay.
+> Esta sección decía lo contrario. Se conserva el diagnóstico original tachado porque el error es
+> lo instructivo.
 
-Las cuatro bandas son **exceso de varianza**, no de media: filas donde el generador metió más ruido.
-El contenido es de máxima entropía y resiste todo lo que se le eche encima, porque **es exactamente
-lo que parece**: ruido. No hay mensaje escondido en un canal de alta entropía continuo; hay la
-firma del generador del autor, o los restos de algo que su propio pipeline destruyó.
+~~Con el modelo cerrado y las bandas aisladas, quedaba extraer el mensaje. No lo hay. Las cuatro
+bandas son exceso de varianza, no de media: filas donde el generador metió más ruido. El contenido
+es de máxima entropía y resiste todo lo que se le eche encima porque es exactamente lo que parece:
+ruido.~~
 
-Lo que hicimos mal no fue el análisis —el modelo es correcto y verificable— sino no haber tenido
-nunca un criterio para **parar**. Un payload de alta entropía que no cede ante ningún decode es,
-casi siempre, ruido; y la probabilidad de que lo sea sube con cada hora que le dedicas sin sacar un
-solo bit estructurado.
+**Falso.** Las cuatro bandas de nueve filas son las cuatro líneas del texto, y el exceso de varianza
+es la huella que deja el mecanismo: el autor sumó a esas 36 filas de `v` múltiplos minúsculos de
+ciertas filas de `p`, y sumar portadoras sube la varianza de la fila. Medimos la sombra del mensaje
+con tres decimales y le pusimos el nombre equivocado.
 
-## 7. La solución estaba en el título
+El fallo se puede señalar con el dedo. La comprobación de "no queda nada" medía la estructura por
+columna promediando sobre las **256 filas**:
+
+```
+DC por columna, promediando las 256 filas : std = 0,134   <- "ruido, absorbido por el modelo"
+DC por columna, solo las 36 filas de banda: std = 2,661   <- x20
+```
+
+La señal vivía en el 14% de las filas. Diluida entre las otras 220 daba 0,134 y parecía nada. No fue
+un test tramposo: fue **medir sobre la población equivocada**, que es difícil de ver precisamente
+porque el número que sale es real y está bien calculado — solo que no responde a la pregunta.
+
+Dos cosas más que también se midieron mal en la primera versión, por si sirven de calibración:
+
+- Normalizar por la σ **global** infla el z de las bandas por su propio exceso de varianza
+  (σ_local/σ_global = 1,43 en la banda A). Hay que usar la σ local del bloque.
+- El residuo tiene la suma por columna forzada a cero, así que bandas y fondo salen anticorrelados
+  a −0,995 por construcción. Cualquier evidencia de payload tiene que sobrevivir a quitar el perfil
+  común. La de aquí sobrevive: tras quitarlo quedan 54/23/48/9 columnas por encima de 3σ en las
+  bandas contra 0-3 en bloques equivalentes del fondo.
+
+## 6b. Dónde estaba: el bitmap
+
+El texto no está en ninguna de las dos imágenes, sino en la relación entre ambas:
+
+```python
+res = v - 0.1*q                              # quita la parte lineal
+A   = normaliza_filas(centra(q))             # las 256 filas de p, unitarias
+C   = centra(res) @ A.T                      # C[i,k] = <fila i del residuo, fila k de p>
+glyph = C[filas_de_banda, 114:141] < -3.5    # bitmap 36x27
+```
+
+```
+..##....##.....##.......#..      ......#####...####.........
+..##....##.....##.......#..      ......#.......#..#.........
+..##...###....###...#####..      ......#......#....#.#.#....
+..#.#..#.#....#.#..##..##..      ......#......#....#.#......
+..#.#..#.#...#..#..#....#..  M4d ......#####.##....#.#......  F0r
+..#.#..#.#..#...#..#....#..      ......#......#....#.#......
+..#.#.##.#..######.#....#..      ......#......#....#.#......
+..#..##..#......#..##..##..      ......#.......#..#..#......
+..#..#...#.....##...#####..      ......#.......####..#......
+```
+
+Control, celdas bajo −3,5σ: **215 de 972** en la ventana del texto, 14 de 8.244 en esas mismas filas
+fuera de la ventana, y **0 de 5.940** en las filas de fondo dentro de la misma ventana. El dibujo
+aguanta cualquier umbral entre −3 y −5σ.
+
+Es esteganografía por espectro ensanchado, y explica por qué mirar los píxeles no sirve: en el
+espacio de la imagen la señal está repartida entre 65.536 valores y queda bajo el ruido. Solo se
+concentra al proyectar contra las portadoras.
+
+## 7. Cómo la acertamos igual (por el camino de al lado)
 
 `p`, `v`, y una `m` que el autor comentó para que la echaras de menos. Son los tres ingredientes de
-**una fórmula**. El reto se llama *Bowling Physics* y el nivel entero es un chiste sobre eso.
+**una fórmula**. El reto se llama *Bowling Physics* y el chiste remata en:
 
 ```
 M4dF0rmUL4          =  "Mad Formula"
 ```
 
-Dos cosas que convierten esto en algo reproducible y no en un golpe de suerte:
+Acertó. Pero conviene ser exacto sobre qué fue esto: **una adivinanza afortunada, no la solución
+del nivel**. El mecanismo real (§6b) no lo tocamos, y el paso de `p = m·v` a "*Mad* Formula" nunca
+hemos sabido reconstruirlo del todo. Que la contraseña entrara nos hizo dar el reto por cerrado y
+archivar el análisis con la conclusión falsa de §6 dentro.
+
+Corrección menor de la primera versión: decía que el 404 de `m.png` era enunciado, porque suelta un
+*"¿Dónde lo habré puesto? Parece ser que me falta algo…"*. No lo es — esa página lleva el menú
+completo del sitio y el pie del framework, y sale igual con cualquier URL inexistente. El enunciado
+de verdad es el comentario del HTML, que sí es el único propio de este nivel.
+
+Dos cosas del acierto que sí son reproducibles y no golpe de suerte:
 
 **El leet es la norma de la casa.** En esta misma edición: `C4M1NOS`, `4roM4Noc7urNo`, `h0LyGr4IL`,
 `t4pF1gHtINg1nINmELEEiSLAND`. Si en este concurso te sale un candidato-frase, la forma en que se
 envía es **en leet**, con mayúsculas intercaladas. Generar la variante leet de cada candidato
 temático debería ser automático, no una ocurrencia.
 
-**El dataset barroco era decoración.** 65.536 partículas, un flujo de Hubble, cuatro bandas
+~~**El dataset barroco era decoración.** 65.536 partículas, un flujo de Hubble, cuatro bandas
 regulares y un texto en un lenguaje esotérico: todo eso es *flavor* alrededor de un concepto. El
-error de marco fue tratar el dato como algo **a decodificar** en vez de como **atrezzo de una idea**.
+error de marco fue tratar el dato como algo a decodificar en vez de como atrezzo de una idea.~~
 
-> **Regla**: en un reto con nombre temático fuerte y assets que resisten todos los decodes, prueba
+> ~~**Regla**: en un reto con nombre temático fuerte y assets que resisten todos los decodes, prueba
 > la hipótesis "los assets son decoración de una frase temática" **en paralelo** a la de extracción,
-> no después de agotarla. Cuesta cinco minutos y compite de tú a tú con horas de estadística.
+> no después de agotarla.~~
+
+**Justo al revés.** El dataset **era** el puzle: la contraseña estaba escrita dentro con letras. La
+hipótesis "esto es decoración" fue la que cerró el nivel en falso, y la regla que salía de ella
+recomendaba abandonar antes la vía que sí llevaba a la solución. Se deja tachada porque el objeto de
+estudio de este writeup ya no es el reto, es cómo se llega a escribir eso con toda la confianza.
+
+Las reglas que sí quedan en pie, sustituyendo a la anterior:
+
+> **Acertar la respuesta no valida el razonamiento.** Si el resultado llega por una vía y la
+> investigación iba por otra, el acierto tapa el error en vez de corregirlo — y le da autoridad,
+> porque ahora el análisis viene firmado por un reto resuelto.
+
+> **Detectar una anomalía y explicarla no es lo mismo.** "El generador metió más ruido ahí" no dice
+> por qué en cuatro bloques, por qué de nueve filas, ni por qué con ese espaciado. Una explicación
+> que no predice ninguno de los detalles que ya has medido no es una explicación, es una etiqueta.
+
+> **Antes de más potencia estadística, cambia de representación.** La señal era invisible en el
+> espacio de la imagen y legible a simple vista en el espacio de correlación entre filas. Entre "aquí
+> no hay nada" y leerlo con los ojos no hay ningún cálculo difícil: hay un cambio de base.
 
 ## 8. Reproducir
 
 ```bash
+python3 solve.py          # la contraseña, dibujada: M4d / F0r / mUL / 4 (+ deja password.png)
 python3 model.py          # modelo completo + las 4 bandas + comprobaciones de residuo cero
 python3 png16.py p.png    # (256, 256, 3) uint16
 ```
+
+Aviso sobre `model.py`: sus "comprobaciones de residuo cero" son las que dieron el falso negativo
+de §6. Se conservan tal cual estaban, sin arreglar, porque forman parte de lo que hay que ver.
 
 ```python
 # el texto oculto en Whitespace de v.png

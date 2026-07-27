@@ -102,8 +102,8 @@ rótulo que apunta a la siguiente — y el rótulo no era lo único que llevaban
 la edición y el que con más elegancia te manda a hacer aritmética que no hace ninguna falta.
 
 **Hack It 2 — Bowling Physics.** Dos PNG de 16 bits con la posición y la velocidad de 65.536
-partículas, y ni una línea de enunciado. Caracterizamos el dataset hasta el último decimal, y todo
-ese trabajo resultó ser irrelevante para la respuesta.
+partículas, y ni una línea de enunciado. La contraseña estaba escrita con letras dentro de los
+datos; la acertamos por otro camino y tardamos en ver que había estado ahí todo el tiempo.
 
 **Hack It 3 — Tercer Templo.** Una imagen de disco de TempleOS, y hay que sacarle la contraseña
 hablando con el oráculo "God" de Terry Davis. Cada pregunta consume entropía que no vuelve, así que
