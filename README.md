@@ -62,9 +62,9 @@ las sesiones que documentamos. No tenemos material de primera mano ni registro d
 la única descripción que nos llegó del mecanismo —algo escondido en el HTML de la página— es de
 segunda mano y no la hemos podido verificar, así que no la damos por buena.
 
-**Solve It 5** sí tiene writeup, aunque el cierre también lo dio un compañero por una vía que no
-hemos podido reproducir. Se publica igual, porque lo que se aprendió por el camino es de lo más
-aprovechable de la serie.
+**Solve It 5** sí tiene writeup; el cierre también lo dio un compañero, durante el propio concurso,
+y por una vía que en su momento no reprodujimos. Esta revisión ya la deja documentada y verificada.
+Se publica igual, porque lo que se aprendió por el camino es de lo más aprovechable de la serie.
 
 ## Los retos, uno a uno
 

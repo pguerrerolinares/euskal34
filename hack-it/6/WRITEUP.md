@@ -16,7 +16,8 @@ nos comieron la tarde.
 
 ## 1. El fichero
 
-`classical_music.wv`: 413 MB, WavPack. La cabecera es lo primero que llama la atención:
+`classical_music.wv`: 413.472.070 bytes —394,3 MiB—, WavPack. La cabecera es lo primero que
+llama la atención:
 
 ```
 magic          wvpk
@@ -79,7 +80,7 @@ Y con eso, a `fs = π×10⁷`:
 Es **vídeo PAL**, sintetizado con precisión. Reshapeando el mensaje demodulado a ancho 2011 y alto
 625, salen 250 fotogramas de 10 segundos de vídeo.
 
-Y el vídeo es **Rick Astley, *Never Gonna Give You Up***. El reto entero es un rickroll con 413 MB
+Y el vídeo es **Rick Astley, *Never Gonna Give You Up***. El reto entero es un rickroll con 394 MiB
 de envoltorio: te llaman "música clásica", te hacen demodular una señal analógica durante horas, y
 lo que sale es pop del 87.
 
@@ -213,7 +214,8 @@ extracción salió con la SNR arruinada y correlación espuria entre canales; co
 **Restar la obra original.** Si el material es una grabación de algo conocido, consigue el original,
 alinéalo y réstalo: lo que sobreviva es lo que el autor añadió. Con un filtro de Wiener global se
 cancela el **95,7%** de la música, y en el residuo aparece un único pico en el canal izquierdo —el
-clip de voz— con el derecho completamente plano.
+clip de voz— con el derecho plano *hasta donde ese instrumento ve*. Cuánto ve exactamente lo
+medimos tarde, y se cuenta en el §10.
 
 Es inmune al punto ciego de comparar L contra R, que borra cualquier cosa presente por igual en
 ambos canales.
@@ -236,8 +238,10 @@ instrumento pasó su gate de calibración y **entonces** su negativo empezó a s
 
 ## 9. Lo que quedó abierto
 
-Con el instrumental ya validado, el fichero quedó **medido y cerrado**: el presupuesto espectral
-explica el 99,98% de la energía en tres portadoras, y hay exactamente **dos payloads** del autor.
+Con el instrumental ya validado, el fichero quedó **medido**: el presupuesto espectral explica el
+99,98% de la energía en tres portadoras y, hasta donde el instrumental de entonces podía ver, hay
+exactamente **dos payloads** del autor. La segunda pasada del §10 le pone número a ese "hasta
+donde".
 
 - **Parte 1/3 = `v1nTag3`**, el caption del vídeo. Firme.
 - **Parte 2/3**: casi con seguridad la **palabra hablada** del canal izquierdo. El autor no la mezcló
@@ -247,15 +251,77 @@ explica el 99,98% de la energía en tres portadoras, y hay exactamente **dos pay
   inicio) apunta a **`/tɹoʊl/` — "troll"**, no a "rickroll". Aun aceptando la palabra, quedaba el
   problema real: **una voz no dicta ortografía**, y `v1nTag3` solo atestigua las sustituciones i→1 y
   e→3, no o→0.
-- **Parte 3/3**: **nunca supimos dónde estaba.** El fichero no contiene una tercera cosa; con el
-  presupuesto espectral cerrado, la parte 3 vive fuera del artefacto y no dedujimos dónde.
+- **Parte 3/3**: **nunca supimos dónde estaba.** El fichero no contiene una tercera cosa por
+  encima de los umbrales medidos en el §10; si está en el artefacto, está por debajo de −8 dB en
+  el audio — y si no, vive fuera y no dedujimos dónde.
 
 Nota de honestidad sobre esta sección: los puntos de la parte 2 (fonética, canal vaciado, resta del
-original) provienen de nuestro análisis de aquellas sesiones y **no los hemos vuelto a ejecutar**
-para este writeup. Lo que sí está re-verificado aquí, ejecutándolo de nuevo, es todo lo demás: la
-cabecera WavPack, la aritmética PAL, el presupuesto espectral con sus dos portadoras, y el caption.
+original) provienen de nuestro análisis de aquellas sesiones y en la primera versión de este
+writeup **no se habían vuelto a ejecutar**. En la segunda pasada (§10) se re-ejecutaron y
+reproducen exactos: F1=399/F2=952 con la F3 hundida, un solo núcleo vocálico de 273 ms, y el
+silencio insertado en L a −47 dB respecto al fondo. Lo demás (cabecera WavPack, aritmética PAL,
+presupuesto espectral, caption) ya estaba re-verificado desde el principio.
 
-## 10. Reproducir
+## 10. Segunda pasada: tres cierres, un acta y una acotación
+
+Dos días después volvimos al fichero con una sola pregunta: ¿cuáles de nuestros negativos estaban
+**medidos** y cuáles solo **declarados**? Salieron tres agujeros, y taparlos costó una tarde.
+
+**El contenedor, byte a byte.** El inventario de metadata WavPack tenía un sub-bloque "desconocido"
+(0x2f, 4 bytes en cada uno de los 5121 bloques) y tres de instancia única que nunca se volcaron.
+El 0x2f resultó ser `ID_BLOCK_CHECKSUM` de WavPack 5 —y `wvunpack -v` valida esos checksums al dar
+"lossless", así que no pueden ser otra cosa—. Los únicos: `ALT_EXTENSION` = `"wav"` (el valor por
+defecto del formato), `RIFF_HEADER` = una cabecera WAV canónica con el π×10⁷ y todos los tamaños
+aritméticamente exactos, `CONFIG_BLOCK` = 4 bytes de flags. Cero bytes sin explicar. La parte 3 no
+está en el contenedor.
+
+**El baseband, al 100% del tiempo.** "No hay subportadora de datos sobre el audio" se había
+concluido con PSD **promediados sobre los 10 segundos** (y una sonda puntual de 0,27 s por canal).
+Un burst FSK/SSTV de 200 ms se diluye 15–20 dB en ese promedio: no lo habríamos visto. El cierre de
+verdad es un espectrograma completo —10 s × 0–245 kHz por canal, con el suelo por bin restado— y no
+deja nada: ni un solo run estrecho sostenido ≥100 ms fuera de los impulsos de la propia música.
+Todo lo que sobresale del suelo quedó identificado: el peine de armónicos de la frecuencia de línea
+(espaciado exacto de 15.622 Hz — diafonía del vídeo dentro del audio, verificada re-demodulando ese
+tramo con un método independiente), su segundo armónico en ~31 kHz, las faldas del programa musical
+y el transitorio de la inserción de la voz.
+
+**El canal R, con gate — y aquí la sorpresa.** "R completamente plano" descansaba en la resta del
+original, un instrumento que nunca había pasado por la disciplina del §8. Se la aplicamos: un clip
+sintético tipo TTS de 300 ms, **mezclado sobre la música** de R (no sustituyendo el canal, que es
+el caso fácil). A −15 y −20 dB **el instrumento no lo ve** (1,0–1,3× sobre el residuo mediano, con
+umbral de detección en 2×), ni en versión Wiener global ni en FIR adaptativo. Empieza a detectar en
+**−8 dB**. La voz conocida de L —que va a nivel de canal, no mezclada— sale a 4–5×; por eso aquélla
+sí se encontró. Con el instrumento ya acotado, el R real: ni una ventana >2× en los diez segundos,
+incluidos los cinco tramos que habían quedado pendientes de escucha.
+
+De esa pasada salió también el **acta de defunción** que faltaba. En las sesiones originales, un
+script midió correlación L/R de 0,19 y "R 9 dB por encima de L" en 5,0–5,5 s y lo etiquetó
+HALLAZGO —"si L lleva la parte 2 y R la 3, encaja"—. Ese hallazgo desapareció de las conclusiones
+sin que nadie escribiera por qué. Ahora está medido: era la música original vista desde la ventana
+en que L está vaciado (R queda a +3,5/+5,6 dB sobre su propio fondo, dinámica musical normal, y su
+residuo tras la resta es ≤1,42×). Muere con medición, no por omisión. **Un hallazgo etiquetado que
+desaparece sin acta es una deuda**; éste debía una.
+
+**El offset del vídeo.** Última puerta abierta: ¿corresponden los 10 s de cinta a un punto
+*elegido* del videoclip? Template matching de nuestros frames contra los 5326 del original: caen en
+la línea identidad (frame N → frame N, correlación hasta 0,992, velocidad 1:1). **La cinta son los
+primeros diez segundos del clip, offset cero**: ahí no hay grado de libertad del autor. (Los dos
+outliers aparentes se explican solos: el frame 0 del original es negro, y el plano de t=9 s se
+repite idéntico en t=145 s.)
+
+Balance: contenedor cerrado al 100%; espectro y baseband cerrados con cobertura completa en tiempo
+y frecuencia; canal R cerrado **hasta −8 dB respecto a la música local** — por debajo de eso nadie
+ha mirado, y el suelo no lo pone el ruido del demodulador (SNR 39 dB) sino la cancelación
+imperfecta (~−13 dB, wow & flutter de la cinta); vídeo alineado 1:1 con el original.
+
+> **Lección (la del reto, aplicada a nosotros):** este writeup decía "R completamente plano" y
+> "exactamente dos payloads". Era más de lo que estaba medido, y lo supimos al ponerle un gate al
+> instrumento: a −15 dB era ciego. **El alcance de la conclusión tiene que ser el alcance de lo
+> medido.** Es el mismo error que nos costó el audio HiFi — cometido esta vez por escrito, en el
+> propio post-mortem. Cazarlo nosotros mismos y ponerle número es lo más parecido que hay a
+> cerrarlo bien.
+
+## 11. Reproducir
 
 ```bash
 wvpkg/usr/bin/wvunpack -y classical_music.wv -o out.wav   # ffmpeg lo rechaza
@@ -272,7 +338,7 @@ cube = msg[:250*625*2011].reshape(250, 625, 2011)   # 250 frames PAL
 El directorio trae ~60 scripts, cada uno con su hipótesis en el docstring y su gate de validación;
 `README.md` es el índice. Los `.npy` intermedios son regenerables y pesan más de 1 GB cada uno.
 
-## 11. Lo que nos llevamos
+## 12. Lo que nos llevamos
 
 1. **Mide dónde está la energía antes de teorizar sobre el contenido.** Un presupuesto espectral que
    cierra al 99,98% te dice cuántas cosas hay dentro del fichero y dónde. Es de lo más barato que
@@ -288,12 +354,16 @@ El directorio trae ~60 scripts, cada uno con su hipótesis en el docstring y su 
    evidencia.
 6. **El enunciado es data.** "El baúl de los recuerdos", "el trastero": el reto te estaba diciendo
    *cinta* desde la primera línea, y estuvimos horas tratando la señal como un formato inventado.
+7. **El alcance de la conclusión es el alcance de lo medido.** "R está plano" era cierto hasta
+   −8 dB, pero lo escribimos sin el número. Un negativo sin sensibilidad medida no es un cierre:
+   es una opinión con formato de cierre.
 
 Sobre el proceso: este reto se atacó con asistencia de IA, y es el que peor salió — pero el patrón
 del fallo no es "no supo": el análisis de señal fue competente y el instrumental que quedó es
 sólido. Lo que falló fue de método, y dos veces en el mismo sitio: **cerrar como hecho un negativo
 que ningún experimento había puesto a prueba**, primero con el audio y luego con los detectores de
-caption. Cuando la corrección llegó —relanzando el análisis en frío, sin heredar el marco "aquí no
-hay audio"— el hallazgo tardó minutos.
+caption. La segunda pasada (§10) encontró una tercera: la afirmación "R plano" de la primera
+versión de este mismo writeup. Cuando la corrección llegó —relanzando el análisis en frío, sin
+heredar el marco "aquí no hay audio"— el hallazgo tardó minutos.
 
 No sacamos el punto. Pero de los trece niveles de la edición, es del que más aprendimos.

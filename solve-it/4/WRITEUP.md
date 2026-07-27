@@ -373,10 +373,65 @@ Con eso se cierra la cadena:
 3. Las señales en night writing → **el recorrido a pasos** por la isla.
 4. Al final del recorrido, usar **Dulce Aroma** (*Sweet Scent*) → el cristal azul responde y **se
    abre un pasadizo**.
-5. Dentro de la cueva oculta hay un **entrenador**; al derrotarlo suelta la contraseña.
+5. Dentro de la cueva oculta hay un **entrenador**; al derrotarlo, el juego **genera** la contraseña
+   —no la lleva escrita: ver abajo.
 
 Y el remate del autor: **se entra usando Dulce Aroma y la contraseña es "aroma nocturno"**. El mismo
 juego de palabras abre y cierra el reto.
+
+### La contraseña no es un texto en la ROM: es un keygen
+
+El punto 5 merece pararse, porque es donde el reto esconde su última vuelta de tuerca. El entrenador
+de la cueva **no lleva la contraseña escrita**. Su diálogo de derrota, en `0x22e05a`, dice *"La
+contraseña es"* y a continuación un **placeholder de variable** (`\n…` más un buffer que el juego
+rellena en caliente), no el texto. La contraseña **no existe en el fichero** hasta que el juego la
+calcula —da igual cómo la busques:
+
+```
+$ grep -abo '4roM4Noc7urNo' pokemon-esmeralda.gba          # 0 resultados (ASCII)
+$ python3 -c 'ROM=open("pokemon-esmeralda.gba","rb").read()
+E={" ":0}                                                  # y en el charset propietario Gen 3
+for i,c in enumerate("0123456789"): E[c]=0xA1+i
+for i,c in enumerate("ABCDEFGHIJKLMNOPQRSTUVWXYZ"): E[c]=0xBB+i
+for i,c in enumerate("abcdefghijklmnopqrstuvwxyz"): E[c]=0xD5+i
+print(ROM.find(bytes(E[c] for c in "4roM4Noc7urNo")))'    # -1: tampoco está
+```
+
+Quien la produce es una **special** —una rutina que los scripts del juego invocan por número—:
+`gSpecials[0x1F4] = 0x08179b3d`. Desensamblada (Thumb) es un keygen pequeño y completo:
+
+```
+seed  = (VarGet(0x404E) & 0xFFFF) | (VarGet(0x4083) << 16)
+gate  : exige dos flags puestos  Y  seed == 0x3D40563B          (si no, no genera)
+state = seed ^ 0xC3A5F17D
+para i = 0..12:                        # 13 caracteres
+    state  = xorshift32(state)         # desplazamientos 13, 17, 5
+    buf[i] = (state >> 24)                          # byte alto del estado
+           ^ TABLA[i & 3][ idx(i) % 19 ]            # sustitución por posición
+           ^ ((29*i + 0x37) & 0xFF)                 # máscara que depende de i
+buf[13] = 0xFF                         # terminador
+```
+
+`idx(i)`, según `i & 3`, es `7i+3`, `11i+5`, `13i+7` o `17i+9`, y hay **cuatro tablas de sustitución
+de 19 bytes** (76 en total) en `0x5F14A0`. El `gate` es lo que ata el keygen al recorrido: sólo
+produce algo cuando has hecho el camino (los dos flags) y el estado del juego vale exactamente
+`0x3D40563B`. Con esa semilla el bucle escupe los trece bytes `a5 e6 e3 c7 a5 c8 e3 d7 a8 e9 e6 c8
+e3`, que en Gen 3 son:
+
+```
+a5=4 e6=r e3=o c7=M a5=4 c8=N e3=o d7=c a8=7 e9=u e6=r c8=N e3=o   ->   4roM4Noc7urNo
+```
+
+**Y el entrenador es HÉCTOR otra vez.** `gTrainers[0x357]` se llama `HECTOR`, especialista de tipo
+eléctrico (MAGNETON, ELECTRODE, PORYGON2, MANECTRIC, METAGROSS, niveles 55–65). El mismo nombre que
+abre la ruta —el HÉCTOR del Centro Espacial que te da el FAIL TICKET— la cierra al final del
+recorrido.
+
+`keygen.py` reproduce todo esto **sin la ROM**: las 76 bytes de las tablas van embebidas (son datos
+del autor, no de la Emerald comercial) y trae una función que las vuelve a extraer del binario, para
+quien lo tenga, y confirma que las embebidas son las de verdad. Aviso de método, por coherencia con
+el resto: esto es *reversing estático*, no lo jugamos en mGBA; la cadena se cierra sobre el binario,
+que es una prueba más fuerte que andar el recorrido, pero conviene decir que no se anduvo.
 
 ### La pista que buscamos donde no estaba
 
@@ -424,7 +479,9 @@ Con honestidad, y son dos cosas distintas que conviene no mezclar:
   conseguía. Ese trabajo fue humano y fue el que puso el modelo correcto encima de la mesa.
 - **Pero eso no produjo la contraseña.** La clave la sacó un compañero **inspeccionando el propio
   juego**, saltándose el recorrido: había dos vías —andar el puzzle como está diseñado, o ir directo
-  al contenido inyectado— y se tomó la segunda, que era la barata.
+  al contenido inyectado— y se tomó la segunda, que era la barata. (Lo que ese compañero encontró
+  inspeccionando es exactamente la special `0x1F4` de la subsección anterior; `keygen.py` la
+  reproduce sin necesitar el juego.)
 
 Lo decimos porque cambia la lectura de todo lo anterior: **el decode de las señales es lo que
 *explica* el reto, no lo que lo resolvió**. Un writeup que presentara el camino largo como si
@@ -445,8 +502,8 @@ nocturno, las dos mitades de la contraseña, son las dos mitades del reto.
 
 **La ROM y el save no se redistribuyen aquí**: son un juego comercial. Se bajan del nivel 4 de Solve
 It en `hackit.party.eus`, y los comandos asumen que los tienes en este directorio con estos nombres.
-Lo que sí va publicado es el instrumental y las nueve capturas, así que **`nightwriting.py` corre tal
-cual sin necesidad de la ROM**.
+Lo que sí va publicado es el instrumental y las nueve capturas, así que **`nightwriting.py` y
+`keygen.py` corren tal cual sin necesidad de la ROM**.
 
 | Fichero | Qué hace |
 |---|---|
@@ -456,6 +513,7 @@ cual sin necesidad de la ROM**.
 | `deoxys.py` / `deoxys_full.py` | desencriptado y volcado del Deoxys |
 | `gen3text.py` | decodificador del charset Gen 3 |
 | `nightwriting.py` | extractor de las señales: rejilla 6×2, tallies y tabla de Barbier |
+| `keygen.py` | reproduce la contraseña sin la ROM (special `0x1F4`, 76 bytes de tablas embebidas) |
 | `imagenes-isla-fail/` | las nueve capturas de las señales |
 
 Los scripts localizan sus datos junto a sí mismos, así que da igual desde dónde los lances. Los
@@ -490,6 +548,10 @@ EOF
 
 # 4. extraer las señales de Fail Island (rejilla 6x2 + tallies)
 python3 nightwriting.py           # imprime los pares y su lectura con la tabla de Barbier
+
+# 5. la contraseña: reproducir el keygen del entrenador (special 0x1F4)
+python3 keygen.py                 # sin ROM -> 4roM4Noc7urNo
+python3 keygen.py pokemon-esmeralda.gba   # además comprueba las tablas contra el binario
 ```
 
 ## Lo que nos llevamos

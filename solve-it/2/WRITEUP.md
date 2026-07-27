@@ -140,19 +140,33 @@ Con los siete glifos dibujados, cada uno admite varias lecturas:
 Solo M y N son inequívocos. El resto no. Y esto **está diseñado así**: es lo que impide resolver el
 reto de un vistazo, mirando el cartel y adivinando. Hay que ganarse la desambiguación.
 
+Como el cartel es obra del autor y no se redistribuye, los siete trazos están redibujados en una
+figura nuestra — `figura_geoglifos_light.png` / `figura_geoglifos_dark.png`, generadas por
+`gen_figura_geoglifos.py` en este mismo directorio: silueta de país, vértices numerados en orden
+cronológico, flechas de dirección y, debajo de cada panel, la lectura. Está construida solo con
+datos (ciudades, horas, países); todo lo que hay que ver del mecanismo se ve ahí sin tocar el
+original.
+
 ## 6. El autor corrige el cartel a mitad de concurso
 
 A media noche, el enunciado del reto cambió y apareció una nota: *"el jueves ha sufrido cambios de
-última hora"*. El cartel se había sustituido. En este directorio están las dos versiones,
-`cartel_OLD.jpg` y `cartel_NEW.jpg`; la cabecera pasa de **43 GRUPOS** a **40 GRUPOS**:
+última hora"*. El cartel se había sustituido. Los ficheros son `cartel_OLD.jpg` y `cartel_NEW.jpg`
+(ver §Reproducir), y el diff de imagen localiza el cambio con precisión — no son dos regiones,
+como dijimos durante el concurso, sino **tres**:
 
-```
-$ python3 -c "
+```python
 from PIL import Image; import numpy as np
-A=np.array(Image.open('cartel_OLD.jpg').convert('L')).astype(int)
-B=np.array(Image.open('cartel_NEW.jpg').convert('L')).astype(int)
-ys,xs=np.where(np.abs(A-B)>30); print(ys.min(),ys.max(),xs.min(),xs.max())"
+A = np.array(Image.open('cartel_OLD.jpg').convert('L')).astype(int)
+B = np.array(Image.open('cartel_NEW.jpg').convert('L')).astype(int)
+D = np.abs(A - B) > 30        # 115.379 píxeles distintos de 11.842.800
+# proyectando D sobre el eje Y salen tres bandas de filas:
+#   filas  651-667   cols  800-816       154 px  → un carácter: «43 GRUPOS» pasa a «40 GRUPOS»
+#   filas 1034-2178  cols ~1890-2360  ~46.700 px  → la columna del JUE, entera
+#   filas 2352-2451  cols  288-3994    68.370 px  → el pie del cartel, de lado a lado
 ```
+
+La cabecera cuadra con el conteo real, columna a columna: 43 = 7+5+7+**8**+5+5+6 y
+40 = 7+5+7+**5**+5+5+6. El jueves es el único día que cambia: −3 bandas.
 
 El jueves (Japón) pasó de **ocho** bandas con horarios irregulares…
 
@@ -176,6 +190,12 @@ japonés pasa de ser un polígono ambiguo a un **bucle cerrado inequívoco: una 
 O sea, la "nota de última hora" no era sabor narrativo: era una **fe de erratas**. El autor detectó
 que su jueves original se leía mal y lo rehízo para fijar una letra. Cuando en mitad de un CTF el
 autor toca un reto, lo que ha tocado es exactamente donde estaba el problema.
+
+Y queda la tercera región, la mayor en área, que no vimos hasta repasar el diff en frío después
+del concurso: en el cartel corregido **el campo UBICACION y su trozo de cinta desaparecen del
+pie**, y el texto de apertura queda centrado. Justo el elemento que veníamos usando como ancla de
+que la respuesta era un lugar. Quien descargara el cartel después del cambio no llegó a ver nunca
+esa pista; nosotros la teníamos porque habíamos guardado el original.
 
 ## 7. Callejón nº 3: anagramar
 
@@ -239,8 +259,21 @@ topónimo bonito. Y de paso explica por qué MADISON parecía tan sólido: con e
 leía **D** ahí, y `{M,A,D,I,S,O,N}` es precisamente el multiset que sale. El decoy estaba
 construido.
 
-En castellano, además: en inglés el orden sería Australia, Brazil, China, France, Japan, Mexico,
-Spain → `C,A,M,N,O,S,I` = basura. El idioma del cartel es parte de la clave.
+En castellano, además — y esto no es una anécdota sino el control negativo más barato de toda la
+cadena:
+
+```python
+glifo = {'Australia': 'C', 'Brasil': 'A', 'China': 'M', 'España': 'I',
+         'Francia': 'N', 'Japón': 'O', 'México': 'S'}
+en    = {'Australia': 'Australia', 'Brasil': 'Brazil', 'China': 'China', 'España': 'Spain',
+         'Francia': 'France', 'Japón': 'Japan', 'México': 'Mexico'}
+print(''.join(glifo[p] for p in sorted(glifo)))              # CAMINOS
+print(''.join(glifo[p] for p in sorted(glifo, key=en.get)))  # CAMNOSI
+```
+
+El mismo mecanismo con los países en inglés escupe `CAMNOSI` — basura. Que un orden dé palabra y
+el otro no demuestra que **el idioma del cartel es parte de la clave**, no un accidente de
+presentación.
 
 ## 9. El formato
 
@@ -258,9 +291,12 @@ Ese es el motivo real de la ambigüedad del reto. No es que el autor dibujara ma
 la contraseña **mezcla letras y dígitos**, y para leerla hay que aceptar la forma tal cual sale del
 mapa en vez de "corregirla" a texto.
 
-Un matiz que no descubrimos hasta después: el formulario **normaliza el leet**, así que la forma
-plana también habría entrado. O sea que el paso del leet es cómo se *lee* el resultado, no una
-cerradura adicional — el reto ya estaba resuelto al llegar a `CAMINOS`.
+Precisión, ya puestos: por esa misma regla el zigzag de México es un **5**, así que la escritura
+coherente sería `C4M1N05`; la contraseña oficial usa **S** en la última. Es una inconsistencia del
+autor, y en la práctica no cambia nada, porque hay un matiz que no descubrimos hasta después: el
+formulario **normaliza el leet**, así que la forma plana —y la todo-dígitos— también habrían
+entrado. O sea que el paso del leet es cómo se *lee* el resultado, no una cerradura adicional — el
+reto ya estaba resuelto al llegar a `CAMINOS`.
 
 ## Reproducir
 
@@ -272,6 +308,9 @@ tienes las dos versiones en el directorio con estos nombres:
 |---|---|
 | `cartel.jpg` / `cartel_OLD.jpg` | el cartel original, 43 grupos |
 | `cartel_NEW.jpg` | el corregido, 40 grupos, jueves rehecho |
+| `figura_geoglifos_light.png` / `_dark.png` | los siete trazos redibujados por nosotros (§5) — esto sí se publica |
+| `gen_figura_geoglifos.py` | el script que genera la figura; lleva dentro todas las coordenadas |
+| `world.geo.json` | siluetas de país para la figura (johan/world.geo.json, dominio público) |
 
 La versión vieja solo se pudo comparar porque la habíamos descargado antes del cambio; una vez el
 autor sustituyó el fichero, el original ya no está servido. Si empiezas ahora, del sitio sale la
@@ -287,8 +326,9 @@ print('pixeles distintos:', (np.abs(A-B)>30).sum())"
 ```
 
 Para redibujar los glifos solo hacen falta las coordenadas de las ciudades natales y `matplotlib`,
-con la corrección de aspecto de §4. Es el paso donde conviene mirar el resultado con los ojos: la
-diferencia entre C y O no la decide un algoritmo.
+con la corrección de aspecto de §4 — `python3 gen_figura_geoglifos.py` hace exactamente eso y
+regenera la figura de §5 en sus dos temas. Es el paso donde conviene mirar el resultado con los
+ojos: la diferencia entre C y O no la decide un algoritmo.
 
 ## Lo que nos llevamos
 

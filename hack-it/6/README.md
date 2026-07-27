@@ -19,7 +19,7 @@ El writeup del nivel, con el análisis de la señal y todo lo que se descartó, 
 
 ## Lo que no está aquí, y por qué
 
-El fichero del reto (`classical_music.wv`, 395 MB) no se redistribuye: es material de *ontza*. Todo
+El fichero del reto (`classical_music.wv`, 413.472.070 bytes = 394,3 MiB) no se redistribuye: es material de *ontza*. Todo
 lo demás que se generó durante el reto —el vídeo PAL demodulado, los 250 frames, ocho ficheros
 `.npy` de 1,2 GB cada uno, los renders para free-viewing y los `.deb` extraídos de `wvunpack` y
 `zbarimg`— suma unos 11 GB y **se regenera desde el `.wv`**. Nada de eso tiene sentido en un repo.

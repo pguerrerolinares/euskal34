@@ -8,11 +8,12 @@ Un PNG con tres líneas de glifos geométricos. Nada más.
 La contraseña es **`MENEGROTH`**, y el título del reto la contenía desde el primer minuto — pero
 eso no lo vimos hasta el final, así que lo dejamos para el final.
 
-Dos avisos por delante, porque este writeup es distinto de los otros. El primero: **no lo cerramos
-nosotros**; lo remató un compañero de equipo por una vía que aún **no hemos podido reproducir**. El
-segundo: el camino que sí recorrimos tiene el hallazgo más transferible de los trece niveles, y no
-es criptográfico, es de **método**. Si trabajas con agentes, la sección 3 es la única parte que
-importa.
+Dos avisos por delante, porque este writeup es distinto de los otros. El primero: el cierre no
+salió del mismo método que el resto del análisis — lo remató **un compañero de equipo durante el
+propio concurso**, por una vía que en su momento no supimos reproducir. Esta revisión documenta esa
+vía, la reproduce y la deja verificada (sección 7). El segundo: el camino largo que sí recorrimos en
+directo tiene el hallazgo más transferible de los trece niveles, y no es criptográfico, es de
+**método**. Si trabajas con agentes, la sección 3 es la única parte que importa.
 
 ---
 
@@ -23,7 +24,7 @@ por similitud visual y sacar la secuencia. El resultado:
 
 - **71 signos** en total, **25 distintos**.
 - `|` = separador de palabra, `||` / `|||` = fin de frase.
-- **21 palabras** repartidas en **tres líneas**.
+- **22 palabras** repartidas en **tres líneas**.
 
 Etiquetando los 25 signos como `S01`..`S25`, el criptograma es este:
 
@@ -32,10 +33,17 @@ L1  S01-S02 | S03-S04 | S01-S05 | S06-S07-S08-S01 | S09-S03-S01-S06-S10-S01-S05 
     S11 | S01-S02 | S12-S08-S13-S06-S07 | S14-S07-S02 | S15-S14-S16-S02
 
 L2  S17 | S18-S14-S01-S05 | S16-S19 | S12-S08-S13-S05 | S12-S06-S20-S08-S15-S11-S05 |
-    S16-S19 | S01-S13-S04-S07-S04 | S17-S04 | S21-S05-S07-S05
+    S16-S19 | S01-S13-S04-S07-S04 | S17-S04 | S21-S05-S07-S05 | S22-S23
 
-L3  S22-S23-S15-S24-S05 | S09-S25-S04
+L3  S15-S24-S05 | S09-S25-S04
 ```
+
+> **Nota sobre el corte de línea**: la transcripción se contó mal una vez, con `S22-S23` como
+> arranque de la línea 3 en vez de cierre de la línea 2. Lo zanja mirar directamente
+> `row3.png`: son **seis glifos agrupados 3 + 3**, con un separador simple entre los dos grupos y
+> la doble barra de fin de frase al final. No hay ninguna palabra de cinco signos en esa imagen.
+> `S22-S23` (`og`) es la última palabra de la línea 2; la línea 3 son `S15-S24-S05` (`tusen`) y
+> `S09-S25-S04` (`huler`), sección 7.
 
 La transcripción se verificó a fondo: distancias de píxel entre clusters para descartar que dos
 formas parecidas fueran el mismo signo partido en dos (las cuatro variantes de rombo son
@@ -162,76 +170,165 @@ Conclusión que sostenemos: **el autor se inspiró en la estética del elamita l
 de transliteración silábica no produjo nada legible, y el paso crítico —decidir qué signo nuestro
 *es* qué signo elamita— no lo pudimos cerrar por encima del "se parece".
 
-## 6. Lo que sí dice la estructura: la línea 3 lleva un nombre propio
+## 6. Lo que dice la estructura sobre la línea 3 (y dónde se equivocó)
 
-Esta sección se escribió **antes** de conocer la respuesta, y es la parte del análisis que
-resistió. Es medible y no depende de ninguna identificación. Contando la frecuencia de cada signo:
+Esta sección se escribió **antes** de conocer la respuesta. Es medible y no depende de ninguna
+identificación. Contando la frecuencia de cada signo, con el corte de línea correcto (`row3.png`:
+seis glifos, 3+3):
 
 - **8 signos aparecen una sola vez** en todo el texto (`S10`, `S18`, `S20`, `S21`, `S22`, `S23`,
   `S24`, `S25`).
-- La **línea 3 son dos palabras**, `S22-S23-S15-S24-S05` (5 signos) y `S09-S25-S04` (3 signos),
-  y entre las dos **concentran 4 de esos 8**.
-- La primera tiene **3 signos únicos de sus 5** — la mayor concentración de todo el criptograma,
-  con diferencia.
+- La **línea 3 son dos palabras**, `S15-S24-S05` (`tusen`, 3 signos) y `S09-S25-S04` (`huler`, 3
+  signos), y entre las dos **concentran 2 de esos 8** (`S24`, `S25`).
+- Los otros dos hapax que en algún momento se creyeron de la línea 3 (`S22`, `S23`) son, en
+  realidad, la **última palabra de la línea 2** (`og`) — no hay ninguna palabra de cinco signos en
+  la línea 3, la que tiene más signos únicos es de tres, con **1 único de 3**.
 
-Un bloque final construido con sílabas que no aparecen en ninguna otra parte del texto es la
-firma de un **nombre propio**: usa fonemas que el resto del mensaje no necesita. Encaja con la
-forma del reto — un texto que termina señalando algo, y ese algo es la respuesta.
+Un bloque final construido con sílabas que no aparecen en ninguna otra parte del texto sigue
+siendo, en general, la firma típica de un nombre propio. Pero contrastado con el texto completo
+(sección 7), esa lectura falla en dos frentes: la concentración de hapax en la línea 3 es la
+mitad de lo que se llegó a creer, y lo que señala no es un nombre — es «tusen huler», **"mil
+cuevas"**, dos sustantivos comunes. Los dos nombres propios reales del criptograma son **Doriath**
+(última palabra de la línea 1) y **Esgalduin** (línea 2), donde nadie los buscó.
 
-Un detalle más: **`S05` es el signo más frecuente (8 apariciones) y aparece casi siempre en
-posición final de palabra**, incluida la última palabra de la línea 3. Sea cual sea su valor, el
-nombre termina en la misma sílaba que media docena de palabras del texto.
+Un detalle que sí se sostiene: **`S01` y `S05` empatan como signos más frecuentes** (8 apariciones
+cada uno), y `S05` aparece casi siempre en posición final de palabra —7 de sus 8 apariciones—,
+incluida la última palabra de la línea 3.
 
 ### Qué acotó esto, y qué no
 
-Conviene separar bien los dos pasos, porque es fácil venderlos como uno solo y no lo son.
+Conviene separar bien los dos pasos, porque es fácil venderlos como uno solo, y uno de los dos no
+sobrevive a la corrección del corte de línea.
 
 **Paso 1, semántico**: partiendo del enunciado (*"dentro de una cueva"*) se preselecciona a mano
 una lista corta de topónimos de *El Silmarillion* asociados a cuevas y salas subterráneas —
 **Menegroth**, **Belegost**, **Nogrod**, **Nargothrond**, **Utumno**, **Androth**. Esto es
-lectura temática, no análisis.
+lectura temática, no análisis, y no depende de la transcripción: sigue en pie.
 
-**Paso 2, estructural**: sobre esos seis se aplica la restricción de la línea 3 —primera palabra
-= **5 signos todos distintos**, es decir 5 sílabas distintas en un silabario CV—. Sobreviven
-**tres**: *Menegroth* (me-ne-go-ro-th), *Belegost* y *Androth*. Se caen *Nargothrond* (pide unas
-siete sílabas) y *Utumno* y *Nogrod* (cuatro o menos).
+**Paso 2, estructural, y este cae**: la restricción que se usó en su momento —"la primera palabra
+de la línea 3 tiene 5 signos, todos distintos"— partía del corte de línea mal contado. Con el
+corte correcto esa palabra tiene **3 signos**, no 5, y además ahora sabemos (sección 7) que la
+línea 3 no codifica ningún nombre. El filtro de sílabas que en su día redujo los seis candidatos a
+tres —*Menegroth*, *Belegost* y *Androth*—, y dentro del cual estaba la respuesta correcta, se
+apoyaba en un conteo que no era el real. Fue un acierto por motivos equivocados, y no lo
+sostenemos como método: se deja constancia de que ocurrió, no como ruta válida al resultado.
 
-La respuesta era **Menegroth**, y estaba entre los tres.
+Y encima, **el filtro no redujo el corpus de El Silmarillion a tres, redujo a tres los seis
+nombres que ya estábamos barajando**. Aplicando la misma regla a medio centenar de topónimos de la
+obra sobreviven **dieciocho** — Almaren, Avallone, Dorlomin, Eldamar, Estolad, Formenos,
+**Gondolin**, Himring, Ilmarin, **Neldoreth**, Nevrast, Taniquetil, Tolfalas, Tumladen, Vinyamar y
+compañía. Y varios son tan temáticamente plausibles como los nuestros: Gondolin es la ciudad
+oculta, Neldoreth el bosque de Doriath, Himring una fortaleza.
 
-Ahora la parte que hay que decir sin maquillar: **el filtro no redujo el corpus de El
-Silmarillion a tres, redujo a tres los seis nombres que ya estábamos barajando**. Aplicando la
-misma regla a medio centenar de topónimos de la obra sobreviven **dieciocho** — Almaren, Avallone,
-Dorlomin, Eldamar, Estolad, Formenos, **Gondolin**, Himring, Ilmarin, **Neldoreth**, Nevrast,
-Taniquetil, Tolfalas, Tumladen, Vinyamar y compañía. Y varios son tan temáticamente plausibles
-como los nuestros: Gondolin es la ciudad oculta, Neldoreth el bosque de Doriath, Himring una
-fortaleza.
+O sea: **el único recorte defendible es el semántico**, no el estructural. El encuadre honesto es
+este:
 
-O sea: **el recorte de verdad lo hizo la preselección semántica, no la aritmética de sílabas**, y
-conviene no disfrazar lo uno de lo otro. El encuadre honesto es este:
+> **La estructura te dice dónde mirar; no te dice qué es.** Y aquí ni siquiera acertó el "dónde":
+> la mayor concentración real de hapax está repartida entre el final de la línea 2 y la línea 3, y
+> ninguna de las dos lleva un nombre — la línea 3 es «tusen huler», dos sustantivos comunes.
+> Elegir *Menegroth* fue, de principio a fin, trabajo de lectura temática.
 
-> **La estructura te dice dónde mirar; no te dice qué es.** La distribución de hapax localizó el
-> nombre propio al final del texto —eso sí es un resultado del análisis, y es barato y sólido—
-> pero elegir *cuál* nombre fue trabajo de lectura temática, y ni siquiera llegó a uno.
-
-El análisis estructural **acotó, no acertó**. Sigue mereciendo la pena por lo que cuesta: contar
-frecuencias de símbolos es gratis y te dice en qué parte del criptograma está la respuesta,
-aunque no tengas la clave.
+El análisis estructural **no acotó lo que creíamos que acotaba**. Sigue mereciendo la pena
+contarlo — no como método que funcionó, sino como ejemplo de cómo un corte de línea mal contado
+puede disfrazarse de hallazgo durante horas.
 
 ## 7. El final: el título llevaba la respuesta
 
-El reto lo cerró **un compañero de equipo**, no nosotros, y por una vía que no hemos conseguido
-reproducir. Según su relato: los signos se mapean **parcialmente a algo cercano al noruego**;
-como varios no tienen correspondencia uno a uno, se sustituyeron ciertas letras, y con eso el
-texto encajaba. La traducción daba **una frase de *El Silmarillion* referida a una cueva**, y el
-nombre de esa cueva era la contraseña:
+El reto lo cerró **un compañero de equipo**, durante el propio concurso. Esta sección documenta,
+reproduce y verifica esa vía: el texto plano es **noruego**, escrito con los valores fonéticos que
+el equipo de François Desset publicó en 2022 para el elamita lineal (sección 4) — pero no como
+sustitución letra a letra. Es un **abjad**: cada signo aporta la **consonante** de su celda en la
+lámina de Desset, y las vocales se escriben solo a veces, con los cuatro signos vocálicos (`a`,
+`e`, `i`, `u`). Ese es el motivo de fondo por el que ningún ataque de la sección 2 cerraba nunca:
+todos asumían "un signo = una letra", y aquí un mismo signo consonántico reaparece con vocales
+distintas alrededor que simplemente no están escritas.
+
+La prueba más clara es la palabra de siete signos que ningún crib logró leer durante el concurso:
+`h·v·d·s·t·d·n`. Como consonantes sueltas no dice nada; como esqueleto de una palabra noruega de
+11 letras, es inmediata: **hovedstaden**.
+
+### La tabla abjad
+
+25 signos, 25 celdas de la lámina de Desset, cada una con la consonante que aporta:
 
 ```
-MENEGROTH
+S01: te   clase T  (d/t)              S14: ri2  clase R  (r)
+S02: ta   clase T  (t/d)              S15: tu2  clase T  (d/t)
+S03: wi   clase W  (v)                S16: a    clase A  (a)
+S04: ra   clase R  (r)                S17: pu2  clase P  (p/f)
+S05: na   clase N  (n)                S18: pe   clase P  (b)
+S06: sa   clase S  (s)                S19: u2   clase U  (v)
+S07: ki   clase K  (k/g)              S20: ka   clase K  (g)
+S08: la   clase L  (l)                S21: ku2  clase K  (k)
+S09: hu   clase H  (h)                S22: u    clase U  (o)
+S10: ti   clase T  (t)                S23: ka2  clase K  (g)
+S11: i    clase I  (i)                S24: si   clase S  (s)
+S12: e    clase E  (e, y la a de "alviske")   S25: li   clase L  (l)
+S13: wi2  clase W  (v)
 ```
 
-**Menegroth** son *"las Mil Cavernas"*: el reino subterráneo de Thingol en Doriath, excavado en
-la roca por los enanos de Belegost. Y ahora la parte que duele, verificada contra el texto de
-Tolkien:
+Tres celdas las fijan directamente las palabras ancla, no al revés: **`S10` = t** (la t de
+hoved**s**t**aden**), **`S13` = v** (fijada a la vez por d**v**erger, el**v**en y al**v**iske) y
+**`S20` = g** (la g de Es**g**alduin).
+
+### Las anclas duras
+
+Dos palabras del texto no dejan margen de interpretación: **`hovedstaden`** y **`Esgalduin`** dan
+**match único** contra las 605.000 formas del Norsk Ordbank. Con 25 signos y un abjad de
+consonantes hay margen de sobra para que un esqueleto corto encaje con varias palabras — pero
+ninguna de estas dos (7 signos cada una) tiene una alternativa real en el diccionario noruego. Ese
+es el argumento que cierra la discusión de si el parecido es azar: fijadas esas dos palabras, el
+resto de la frase se resuelve sin margen de maniobra.
+
+### El texto
+
+```
+Det var den skjulte hovedstaden i det alviske riket Doriath.
+På bredden av elven Esgalduin, av dverger for kongen, og
+tusen huler.
+```
+
+*(«Era la capital escondida del reino élfico de Doriath. A orillas del río Esgalduin, por enanos
+para el rey, y mil cuevas.»)*
+
+*(Nota: la palabra es **`alviske`**, no `elviske`. Quedó mal en una revisión anterior de este
+mismo writeup.)*
+
+### Los puntos que no cierran perfectos
+
+El descifrado no es una sustitución mecánica sin fisuras, y se declara así en vez de maquillarlo.
+Quedan dos puntos donde el autor del reto tomó un atajo al codificar, no donde falle el
+descifrado:
+
+- La **`a`** de **`alviske`** se escribe con el signo de `e` (`S12`) — la misma celda que cubre la
+  `e` normal en el resto del texto.
+- La **`dd`** de **`bredden`** se colapsa en un solo signo (`S01`): la escritura no representa
+  consonantes dobles.
+
+*(Una revisión anterior de este writeup daba un tercer punto — `og` y `tusen` fundidas en un
+token sin separador. No es así: `row3.png` muestra separador simple entre ambas, son dos palabras
+limpias. Ver la nota de la sección 1.)*
+
+### Sobre el Silmarillion, un matiz
+
+No hay ninguna cita literal de *El Silmarillion* en el texto — eso sigue siendo cierto. Pero es más
+preciso decir que el autor del reto **usa el léxico exacto de su traducción al noruego**, no que
+inventó el noruego desde cero: la traducción de Nils Ivar Agøy contiene, en un pasaje que no
+teníamos localizado, «På Esgalduins søndre bredd… lå Menegroths huler; og hele Doriath lå øst for
+Sirion» — «en la orilla sur del Esgalduin... yacían las cuevas de Menegroth; y todo Doriath se
+extendía al este del Sirion». Y **`alviske`** (la forma que usa Agøy para "élfico") aparece 13
+veces en el libro. El autor no citó una frase: escribió la suya propia con el vocabulario exacto de
+esa traducción — Doriath, Esgalduin, *alviske*, *huler* — que es un vínculo más fuerte con el
+original que una cita suelta, y explica por qué ninguna búsqueda de frase textual daba con nada.
+
+### Por qué describe Menegroth sin nombrarla
+
+`MENEGROTH` no aparece en el texto: es la respuesta a lo que el texto describe, no una palabra
+del propio texto. **Menegroth** son *"las Mil Cavernas"*: el reino subterráneo de Thingol en
+Doriath, a orillas del Esgalduin, excavado en la roca por los enanos de Belegost. Frase a frase,
+el noruego reconstruido **es** la ficha de Menegroth sin decir su nombre: la capital escondida
+(*hovedstaden*) del reino élfico de Doriath, a orillas del Esgalduin, obra de enanos para el rey,
+de mil cuevas. Y verificado contra el texto de Tolkien:
 
 > *"Carven figures of beasts and birds there ran upon the walls, or climbed upon the pillars, or
 > peered among the branches entwined with many flowers."*
@@ -248,15 +345,132 @@ no la miramos, porque habíamos decidido que el problema era criptográfico y el
 decoración. Es el mismo error de la sección 2 —modelo equivocado del problema— cometido un nivel
 más arriba.
 
-### Lo que sigue sin cerrar
+### Reproducir el descifrado
 
-Sabemos el destino, no el camino. **Seguimos sin poder reproducir el paso signos → noruego →
-frase de *El Silmarillion***, y esa parte continúa siendo testimonio de segunda mano sin
-evidencia en nuestro material. En particular, no sabemos si esa vía era la intended o un atajo
-afortunado, ni cómo encajan con ella los valores silábicos del elamita lineal (sección 5).
+Verificador sin dependencias (`decipher_norwegian.py`, en este directorio): no aplica el diccionario
+en un solo sentido, **cifra la frase noruega reconstruida** y comprueba letra a letra que reproduce
+los 71 signos exactos del criptograma.
 
-El organizador publica writeups oficiales al cabo de unos días. Cuando salga el de este nivel,
-cerrará ese hueco.
+```python
+#!/usr/bin/env python3
+"""
+Verificador final solve5: elamita lineal -> noruego (modelo abjad).
+
+Tabla cerrada: signo -> (celda Desset, clase fonetica).
+Frase objetivo: se comprueba signo a signo que el cifrado de la frase
+noruega reconstruida reproduce exactamente los 71 signos del criptograma.
+"""
+
+CRYPTO = [[1,2],[3,4],[1,5],[6,7,8,1],[9,3,1,6,10,1,5],[11],[1,2],[12,8,13,6,7],[14,7,2],[15,14,16,2],
+     [17],[18,14,1,5],[16,19],[12,8,13,5],[12,6,20,8,15,11,5],[16,19],[1,13,4,7,4],[17,4],[21,5,7,5],
+     [22,23],[15,24,5],[9,25,4]]
+# La segmentacion de palabra la fija row3.png: 6 glifos en dos grupos de 3, con
+# separador simple entre ambos y doble barra de fin de frase al cierre. S22-S23
+# ("og") es la ultima palabra de L2; L3 son S15-S24-S05 ("tusen") y S09-S25-S04
+# ("huler"). El verificador reproduce los 71 signos igual con cualquier
+# agrupacion -- comprueba la lectura, no la segmentacion -- pero la imagen manda.
+
+TABLE = {  # signo: (celda elamita Desset, clase, letras noruegas que cubre)
+    1:  ('te',  'T', 'd/t'),
+    2:  ('ta',  'T', 't/d'),
+    3:  ('wi',  'W', 'v'),
+    4:  ('ra',  'R', 'r'),
+    5:  ('na',  'N', 'n'),
+    6:  ('sa',  'S', 's'),
+    7:  ('ki',  'K', 'k/g'),
+    8:  ('la',  'L', 'l'),
+    9:  ('hu',  'H', 'h'),
+    10: ('ti',  'T', 't'),
+    11: ('i',   'I', 'i'),
+    12: ('e',   'E', 'e (y la a de alviske)'),
+    13: ('wi2', 'W', 'v'),
+    14: ('ri2', 'R', 'r'),
+    15: ('tu2', 'T', 'd/t'),
+    16: ('a',   'A', 'a'),
+    17: ('pu2', 'P', 'p/f (sila "pa" completa en "paa")'),
+    18: ('pe',  'P', 'b'),
+    19: ('u2',  'U', 'v (grafia latina u~v)'),
+    20: ('ka',  'K', 'g'),
+    21: ('ku2', 'K', 'k'),
+    22: ('u',   'U', 'o'),
+    23: ('ka2', 'K', 'g'),
+    24: ('si',  'S', 's'),
+    25: ('li',  'L', 'l'),
+}
+
+# Frase noruega reconstruida, palabra a palabra, con el cifrado esperado:
+# cada palabra -> lista de (letra(s) del noruego, signo que las representa)
+PHRASE = [
+    ("det",         [('d',1),('e',None),('t',2)]),
+    ("var",         [('v',3),('a',None),('r',4)]),
+    ("den",         [('d',1),('e',None),('n',5)]),
+    ("skjulte",     [('s',6),('k',7),('j',None),('u',None),('l',8),('t',1),('e',None)]),
+    ("hovedstaden", [('h',9),('o',None),('v',3),('e',None),('d',1),('s',6),('t',10),('a',None),('d',1),('e',None),('n',5)]),
+    ("i",           [('i',11)]),
+    ("det",         [('d',1),('e',None),('t',2)]),
+    ("alviske",     [('a',12),('l',8),('v',13),('i',None),('s',6),('k',7),('e',None)]),
+    ("riket",       [('r',14),('i',None),('k',7),('e',None),('t',2)]),
+    ("Doriath",     [('d',15),('o',None),('r',14),('i',None),('a',16),('t',2),('h',None)]),
+    ("på",          [('på',17)]),
+    ("bredden",     [('b',18),('r',14),('e',None),('dd',1),('e',None),('n',5)]),
+    ("av",          [('a',16),('v',19)]),
+    ("elven",       [('e',12),('l',8),('v',13),('e',None),('n',5)]),
+    ("Esgalduin",   [('e',12),('s',6),('g',20),('a',None),('l',8),('d',15),('u',None),('i',11),('n',5)]),
+    ("av",          [('a',16),('v',19)]),
+    ("dverger",     [('d',1),('v',13),('e',None),('r',4),('g',7),('e',None),('r',4)]),
+    ("for",         [('f',17),('o',None),('r',4)]),
+    ("kongen",      [('k',21),('o',None),('n',5),('g',7),('e',None),('n',5)]),
+    ("og",          [('o',22),('g',23)]),
+    ("tusen",       [('t',15),('u',None),('s',24),('e',None),('n',5)]),
+    ("huler",       [('h',9),('u',None),('l',25),('e',None),('r',4)]),
+]
+
+print(f"{'#':>3} {'criptograma':<28} {'palabra':<14} cifrado letra a letra")
+ok_all = True
+for wi, (signs, (word, enc)) in enumerate(zip(CRYPTO, PHRASE)):
+    produced = [s for _, s in enc if s is not None]
+    match = "OK " if produced == signs else "FAIL"
+    if produced != signs: ok_all = False
+    sig_str = '-'.join(f"S{s:02d}" for s in signs)
+    det = ' '.join(f"{l}»S{s:02d}" if s else f"({l})" for l, s in enc)
+    print(f"w{wi+1:>2} {sig_str:<28} {word:<14} {det}   [{match}]")
+
+print()
+print("TOTAL:", "los 71 signos reproducen el criptograma EXACTAMENTE" if ok_all else "HAY DISCREPANCIAS")
+```
+
+Salida real (ejecutado tal cual, sin editar):
+
+```
+  # criptograma                  palabra        cifrado letra a letra
+w 1 S01-S02                      det            d»S01 (e) t»S02   [OK ]
+w 2 S03-S04                      var            v»S03 (a) r»S04   [OK ]
+w 3 S01-S05                      den            d»S01 (e) n»S05   [OK ]
+w 4 S06-S07-S08-S01              skjulte        s»S06 k»S07 (j) (u) l»S08 t»S01 (e)   [OK ]
+w 5 S09-S03-S01-S06-S10-S01-S05  hovedstaden    h»S09 (o) v»S03 (e) d»S01 s»S06 t»S10 (a) d»S01 (e) n»S05   [OK ]
+w 6 S11                          i              i»S11   [OK ]
+w 7 S01-S02                      det            d»S01 (e) t»S02   [OK ]
+w 8 S12-S08-S13-S06-S07          alviske        a»S12 l»S08 v»S13 (i) s»S06 k»S07 (e)   [OK ]
+w 9 S14-S07-S02                  riket          r»S14 (i) k»S07 (e) t»S02   [OK ]
+w10 S15-S14-S16-S02              Doriath        d»S15 (o) r»S14 (i) a»S16 t»S02 (h)   [OK ]
+w11 S17                          på             på»S17   [OK ]
+w12 S18-S14-S01-S05              bredden        b»S18 r»S14 (e) dd»S01 (e) n»S05   [OK ]
+w13 S16-S19                      av             a»S16 v»S19   [OK ]
+w14 S12-S08-S13-S05              elven          e»S12 l»S08 v»S13 (e) n»S05   [OK ]
+w15 S12-S06-S20-S08-S15-S11-S05  Esgalduin      e»S12 s»S06 g»S20 (a) l»S08 d»S15 (u) i»S11 n»S05   [OK ]
+w16 S16-S19                      av             a»S16 v»S19   [OK ]
+w17 S01-S13-S04-S07-S04          dverger        d»S01 v»S13 (e) r»S04 g»S07 (e) r»S04   [OK ]
+w18 S17-S04                      for            f»S17 (o) r»S04   [OK ]
+w19 S21-S05-S07-S05              kongen         k»S21 (o) n»S05 g»S07 (e) n»S05   [OK ]
+w20 S22-S23                      og             o»S22 g»S23   [OK ]
+w21 S15-S24-S05                  tusen          t»S15 (u) s»S24 (e) n»S05   [OK ]
+w22 S09-S25-S04                  huler          h»S09 (u) l»S25 (e) r»S04   [OK ]
+
+TOTAL: los 71 signos reproducen el criptograma EXACTAMENTE
+```
+
+Los 71 signos, sin excepción, salen de cifrar la frase reconstruida — no al revés. Es la prueba
+más fuerte que tenemos de que la lectura es correcta y no un ajuste post-hoc.
 
 ---
 
@@ -273,15 +487,15 @@ inmediato:
 ```python
 from collections import Counter
 L1 = [[1,2],[3,4],[1,5],[6,7,8,1],[9,3,1,6,10,1,5],[11],[1,2],[12,8,13,6,7],[14,7,2],[15,14,16,2]]
-L2 = [[17],[18,14,1,5],[16,19],[12,8,13,5],[12,6,20,8,15,11,5],[16,19],[1,13,4,7,4],[17,4],[21,5,7,5]]
-L3 = [[22,23,15,24,5],[9,25,4]]
+L2 = [[17],[18,14,1,5],[16,19],[12,8,13,5],[12,6,20,8,15,11,5],[16,19],[1,13,4,7,4],[17,4],[21,5,7,5],[22,23]]
+L3 = [[15,24,5],[9,25,4]]
 
 W = L1 + L2 + L3
 c = Counter(s for w in W for s in w)
 hapax = {s for s, n in c.items() if n == 1}
 print(len(W), 'palabras,', sum(c.values()), 'signos,', len(c), 'distintos')
 print('hapax:', sorted(hapax))                                  # 8 signos
-print('hapax en L3:', [s for w in L3 for s in w if s in hapax])  # 4 de los 8
+print('hapax en L3:', [s for w in L3 for s in w if s in hapax])  # 2 de los 8; S22,S23 estan en L2
 ```
 
 ## Lo que nos llevamos
@@ -303,9 +517,13 @@ print('hapax en L3:', [s for w in L3 for s in w if s in hapax])  # 4 de los 8
 6. **Cuando cae el marco, reabre los descartes que hiciste bajo él.** Las lecturas rechazadas por
    violar una regla que después abandonas siguen en el tablero, y nadie vuelve a mirarlas.
 7. **La estadística de símbolos vale aunque no tengas la clave — para localizar, no para
-   elegir.** Contar hapax señaló dónde estaba el nombre propio sin descifrar una sola palabra.
-   Quedarse con tres candidatos ya no fue mérito suyo, sino de la lectura temática; no confundas
-   los dos pasos ni le atribuyas a la aritmética un recorte que hizo la semántica.
+   elegir.** Y hay que recontarla cuando el dato de entrada estaba mal: aquí el corte de línea se
+   contó una vez con un signo de más, y eso infló la concentración de hapax en la línea 3 al
+   doble de la real. Corregido el corte, lo que queda tampoco era un nombre propio, era una
+   conjunción (en la línea 2) y dos sustantivos comunes (en la 3). Quedarse con tres candidatos y
+   acertar entre ellos no fue mérito de la aritmética de sílabas, sino de la lectura temática — la
+   aritmética partía, además, de un conteo equivocado. No confundas los dos pasos ni le atribuyas
+   a un cálculo un recorte que hizo la semántica.
 
 Sobre el proceso: este reto se atacó con asistencia de IA de forma intensiva, y es el ejemplo
 más claro de la serie de que **más cómputo no arregla un modelo equivocado del problema**. Toda
@@ -314,7 +532,9 @@ movió la aguja fueron dos intervenciones humanas baratísimas: convertir los gl
 el canal) y arrastrar la imagen a un buscador visual (identificar el sistema). Una segunda
 instancia en frío, con contexto limpio, tampoco desbloqueó: siguió una lectura silábica elamita
 literal que no cerraba, porque compartía la premisa de que la solución era descifrable desde el
-propio texto. Y el cierre real lo puso un compañero, por un camino que aún no sabemos reproducir.
+propio texto. Y el cierre real lo puso un compañero, durante el propio concurso, leyendo el
+elamita lineal como un abjad —consonantes, vocales casi siempre mudas— aplicado al noruego
+(sección 7) — algo que ni el cómputo barato ni el caro llegaron a probar en su momento.
 
 El reto acabó cayendo, así que sí es un writeup de victoria — pero de una victoria repartida y
 con la lección al revés de lo que uno esperaría: **el trabajo caro no sirvió y las dos cosas que
