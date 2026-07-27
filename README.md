@@ -5,7 +5,7 @@ Writeups de doce de los trece niveles del concurso de la EE34 (julio de 2026).
 ## Qué es esto
 
 La **Euskal Encounter** es la party informática que se celebra cada verano en Bilbao. Uno de sus
-concursos clásicos es el **Hack It**, organizado por *ontza*, *owen* y su equipo sobre el Hack It
+concursos clásicos es el **Hack It**, organizado por *Ontza*, *Owen* y su equipo sobre el Hack It
 Framework, y jugado en `hackit.party.eus`. Se divide en dos tracks:
 
 - **Solve It** — siete niveles de lógica, criptografía, encodings, acertijos visuales y puzzles.
@@ -150,14 +150,16 @@ que no comparta el marco.
 
 ## Créditos
 
-El concurso lo montan **ontza** y **owen**, con el equipo organizador del Hack It de la Euskal
-Encounter, y los retos son suyos. Trece niveles, trece ideas distintas, y varios de ellos con una
-vuelta de tuerca que da gusto encontrar. Gracias por el curro.
+El concurso lo montan **Ontza**, que lleva años en esto, y **Owen**, que estrenaba puesto, con el
+equipo organizador del Hack It de la Euskal Encounter. Los retos son suyos: trece niveles, trece
+ideas distintas, y varios de ellos con una vuelta de tuerca que da gusto encontrar. Gracias por el
+curro.
 
-Gracias también a **t3ndo** y **servida**, del equipo **PeruEsClave**: varios niveles de esta
-edición los cerraron ellos, incluidos algunos de los cierres que estos writeups atribuyen a *"un
-compañero de equipo"*. No desglosamos qué hizo cada uno porque no lo tenemos registrado con
-seguridad, y preferimos un agradecimiento sin desglosar a uno mal atribuido.
+Gracias también a **t3ndo**, **servida** y **garridinsi**, el resto del equipo **PeruEsClave** — la
+edición la ganamos entre los cuatro. Varios niveles los cerraron ellos, incluidos algunos de los
+cierres que estos writeups atribuyen a *"un compañero de equipo"*. No desglosamos qué hizo cada uno
+porque no lo tenemos registrado con seguridad, y preferimos un agradecimiento sin desglosar a uno
+mal atribuido.
 
 Los writeups son nuestros y los errores también.
 
@@ -165,12 +167,12 @@ Los writeups son nuestros y los errores también.
 
 Este repositorio se publica bajo licencia **MIT** (ver [LICENSE](LICENSE)). Esa licencia cubre
 **nuestros writeups y scripts** — el análisis, el código de resolución, las herramientas propias.
-**No cubre los retos en sí ni sus materiales**, que son de la organización del Hack It —**ontza**,
-**owen** y su equipo—, o de terceros cuando el reto los cita.
+**No cubre los retos en sí ni sus materiales**, que son de la organización del Hack It —**Ontza**,
+**Owen** y su equipo—, o de terceros cuando el reto los cita.
 
 Algunos writeups incluyen la imagen del propio nivel porque sin ella no se entienden: la
 inscripción de Solve It 5, las capturas de ruido de Solve It 6, los PNG de datos de Hack It 2. Son
-de *ontza* y se reproducen solo para explicar su reto.
+de *Ontza* y se reproducen solo para explicar su reto.
 
 Lo que **no** se redistribuye es lo que no nos corresponde repartir: las ROMs comerciales de Solve
 It 4 y Hack It 5, el cartel de Solve It 2, la lámina de signos elamitas de Wikimedia Commons y el
