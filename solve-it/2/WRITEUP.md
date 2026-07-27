@@ -310,7 +310,7 @@ tienes las dos versiones en el directorio con estos nombres:
 | `cartel_NEW.jpg` | el corregido, 40 grupos, jueves rehecho |
 | `figura_geoglifos_light.png` / `_dark.png` | los siete trazos redibujados por nosotros (§5) — esto sí se publica |
 | `gen_figura_geoglifos.py` | el script que genera la figura; lleva dentro todas las coordenadas |
-| `world.geo.json` | siluetas de país para la figura (johan/world.geo.json, dominio público) |
+| `world.geo.json` | siluetas de país (johan/world.geo.json, dominio público). No siempre viaja con el repo: si falta, el propio script te dice cómo bajarlo |
 
 La versión vieja solo se pudo comparar porque la habíamos descargado antes del cambio; una vez el
 autor sustituyó el fichero, el original ya no está servido. Si empiezas ahora, del sitio sale la
