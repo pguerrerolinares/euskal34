@@ -11,6 +11,13 @@ que hay que descartar, una palanca que lo abre entero, una búsqueda del tesoro 
 binario, un sistema de escritura que no es el que parece, y un chiste final que ata el nombre de la
 contraseña con la llave que abre la última puerta.
 
+**Aviso de marco, por delante de todo lo demás.** El nivel está diseñado para **jugarse**: descifras
+las señales de la isla, andas el recorrido que dictan, abres el pasadizo del final, ganas el combate
+que hay dentro y el juego te escribe la contraseña en pantalla. Esa era la puerta principal. Nosotros
+entramos por el binario, que llega antes y explica más, pero es un **atajo**. La cadena está cerrada
+por las dos puntas —el recorrido se ha andado dentro del juego y la contraseña sale en pantalla—, y
+las dos rutas se documentan aquí abajo, con la que seguimos marcada como tal.
+
 ---
 
 ## 1. El save es el señuelo
@@ -162,12 +169,13 @@ Aquí el reto deja de ser análisis estático: hay que **jugarlo**. Con mGBA y e
 ruta funciona tal cual. Las señales de Fail Island están en `imagenes-isla-fail/`
 (nueve capturas).
 
-## 4. Las señales no son Braille: son *night writing*
+## 4. Las señales: *night writing*, y braille en el mismo cartel
 
-Aquí es donde el reto nos ganó, y el error fue de **modelo**, no de umbral.
+Aquí es donde el reto nos ganó, y el error fue de **modelo**, no de umbral. Dos veces seguidas, y la
+segunda es la interesante.
 
-Las señales parecen Braille y no lo son. Son **night writing** —la *sonografía* de Charles
-Barbier, 1815—, el sistema militar del que Louis Braille partió y que luego simplificó. La
+Las señales parecen Braille, y la mayor parte no lo son. Son **night writing** —la *sonografía* de
+Charles Barbier, 1815—, el sistema militar del que Louis Braille partió y que luego simplificó. La
 diferencia es exactamente la que decide este reto:
 
 | | Braille | Night writing |
@@ -242,9 +250,10 @@ plausibles, dentro de rango, que mapean a sonidos válidos de la tabla. Sale una
 completa, con pinta de resultado, y es basura. El modelo de celda era correcto desde el principio;
 lo que estaba mal era el agrupamiento de bandas.
 
-Hay un segundo detalle: en algunas señales **la primera celda es un ornamento**, no dato. Se
-distingue porque sus barras son unas tres veces más altas que las de las celdas reales. No en todas:
-en otras la primera celda sí lleva contenido, así que no vale descartarla por sistema.
+Hay un segundo detalle, y aquí nos equivocamos de nuevo: en algunas señales la primera celda tiene
+las barras unas tres veces más altas que las de las celdas normales, y lo despachamos como
+**ornamento**. No lo es. Esas celdas llevan dato, en el otro sistema de escritura del cartel — la
+sección *El segundo sistema* de más abajo. Apartarlas fue lo que dejó el decode a medias.
 
 ### Lo que dicen las señales
 
@@ -255,21 +264,12 @@ S2   un     pas  vers …
 S7   deux   pas  vers …
 S4   trois  pas  vers …
 S3   quatre pas  …
-S5   cinq   pas  vers …
 S8   regardez
 ```
 
-Son **instrucciones de una búsqueda del tesoro**: *un / deux / trois / quatre / cinq pas vers…* y
+Son **instrucciones de una búsqueda del tesoro**: *un / deux / trois / quatre pas vers…* y
 *regardez*. Encaja con el NPC que dice que Fail Island "está llena de señales": **las señales no
 llevan la contraseña, llevan el recorrido**. Son nueve indicaciones a pasos por la isla.
-
-**Aviso importante sobre esa lectura**: no sale letra por letra de los pares que publicamos abajo.
-Es la reconstrucción de las palabras una vez sabes que el texto es francés, y descansa en corregir a
-mano las celdas que nuestra extracción lee mal — que son siempre las mismas y por un motivo
-identificado (§ *Donde nos quedamos*). Por ejemplo, la señal S4 da los pares `42 42 13 12 46`, que
-con la tabla se leen `t·t·o·i·s`: para que diga `trois` hace falta que la segunda celda sea `54`
-(=`r`) y nuestra extracción devuelve `42`. **Los pares son el dato; la glosa francesa es
-interpretación.** Las dos cosas van publicadas por separado a propósito.
 
 Que salga francés no es casualidad: la sonografía de Barbier **es** un sistema francés, y su rejilla
 codifica fonemas franceses. El autor usó la tabla tal cual, en su idioma.
@@ -280,57 +280,191 @@ triángulo consiste en moverse por un patrón preciso para que aparezca el Poké
 inventó un puzzle cualquiera — **replicó la mecánica del evento que da acceso a Deoxys**, que es
 justo lo que repartía Moviplaya 2005. La forma del reto es una cita del evento que le da nombre.
 
+Pero ahí se paró la primera versión del extractor (`nightwriting.py`): salían los numerales, `pas` y
+`regardez`, y **la dirección no se leía nunca** — `vers` salía como `v·é·t·s`. El diagnóstico que
+dimos entonces fue que el extractor mide mal las celdas de tally alto —*"cuando una columna lleva
+cinco o seis marcas, las barras se funden y la cuenta baja"*—, y publicamos el decode como abierto.
+
+**Era falso.** La sección siguiente lo cierra, y es la parte buena del reto.
+
+### El segundo sistema: braille en el mismo cartel
+
+El diagnóstico del "tally alto que se funde" era cómodo porque no obligaba a tocar el modelo. Lo que
+pasa de verdad es que **en el mismo cartel conviven dos sistemas de escritura**, y no hay que
+interpretarlos para distinguirlos: se miden.
+
+| | barras por columna | alto de barra | sistema | cómo se lee |
+|---|---|---|---|---|
+| celda fina | 6 | 6–7 px | night writing | tally por columna → par `(fila, columna)` |
+| celda gruesa | 3 | 18–19 px | braille de 6 puntos | bitmap `1-2-3` (izq) / `4-5-6` (der) |
+
+Seis píxeles contra diecinueve: es una regla, no un juicio. Las celdas que habíamos apartado como
+ornamento son braille y llevan dato. Y el reparto no es caprichoso — en las nueve señales, el
+braille aporta exactamente lo que Barbier no da bien:
+
+- las letras que **no están en la tabla de Barbier**: `c` `[14]`, `h` `[125]`, `x` `[1346]`, y el
+  punto final `.` `[256]`;
+- las de su **fila 5**: `l` `[123]`, `m` `[134]`, `n` `[1345]`, `r` `[1235]`.
+
+Y ahí está la comprobación que lo sostiene: **ninguna celda de night writing de las nueve señales
+baja de la fila 4** en su columna izquierda (los pares observados van de `11` a `46`, sin un solo
+`5x` ni `6x`). El autor cortó Barbier en la fila 4 y para lo que faltaba se pasó al braille. La `r`
+de *vers* nunca fue un conteo mal medido: era braille `[1235]` leído con la tabla del otro sistema.
+Estábamos leyendo con una sola tabla un texto escrito en dos.
+
+`nightwriting2.py` implementa las dos: cuenta barras por columna, decide sistema por ese número y
+aplica la tabla que toca.
+
+### Lo que dicen las señales, enteras
+
+| | francés | castellano |
+|---|---|---|
+| `S1` | *sous le cristal bleu, commencé* | bajo el cristal azul, empieza |
+| `S2` | *un pas vers le midi* | un paso hacia el sur |
+| `S3` | *quatre pas vers l'aube* | cuatro pasos hacia el este |
+| `S4` | *trois pas vers le midi* | tres pasos hacia el sur |
+| `S5` | *six pas vers le couchant* | seis pasos hacia el oeste |
+| `S6` | *un pas vers le nord* | un paso hacia el norte |
+| `S7` | *deux pas vers l'aube* | dos pasos hacia el este |
+| `S8` | *regardez en haut* | mirad arriba |
+| `S9` | *libérez le doux parfum* | liberad el dulce aroma |
+
+Dos cosas que explican por qué ninguna crib encajaba mientras leíamos con una tabla sola:
+
+- **Las direcciones van en francés poético**, no en `nord/sud/est/ouest`: *midi* es el mediodía, el
+  sur; *aube* es el alba, el este; *couchant* es el poniente, el oeste. Solo *nord* va literal.
+- **La transcripción es fonética**, que es como funciona el night writing: la tabla de Barbier
+  indexa sonidos, no letras. `parfun` es `p·a·r·f·[un]` con `[un]` como glifo único; `regarde an
+  haut` es *regardez en haut* dicho en voz alta. No son erratas del extractor, es el sistema.
+
+Y **S9 dice "liberad el dulce aroma"**: la instrucción que nos costó el error más caro del nivel
+(§ 5) estaba escrita en el propio puzzle desde el principio. El recorrido no acaba en una pista,
+acaba en una orden.
+
 ### La extracción completa
 
-Ésta es la salida de `nightwriting.py`, tal cual. Cada celda da un par `(n_izq, n_der)` y `/` marca
-separación de palabra. Las señales van numeradas `S1`–`S9` por orden de fichero:
+Salida de `nightwriting2.py`, tal cual. Cada celda de night writing se imprime como su par
+`(n_izq, n_der)`; cada celda de braille, como su patrón de puntos entre corchetes; `/` marca
+separación de palabra. Debajo de cada línea va la glosa que sale de aplicar las dos tablas:
 
-| Señal | Línea 1 | Línea 2 |
+```
+=== S1
+  L1 46 26 46 / [123] 15 / [14] [1235] 12 46 42 11 [123]
+     sous / lé / cristal
+  L2 31 [123] 25 / [14] 13 [134] [134] 15 [1345] [14] 15 [256]
+     bleu / comméncé.
+=== S2
+  L1 24 / 41 11 46 / 35 15 [1235] 46
+     un / pas / vérs
+  L2 [123] 15 / [134] 12 32 12 [256]
+     lé / midi.
+=== S3
+  L1 43 14 11 42 [1235] 15 / 41 11 46
+     quatré / pas
+  L2 35 15 [1235] 46 / [123] / 11 14 31 15 [256]
+     vérs / l / aubé.
+=== S4
+  L1 42 [1235] 13 12 46 / 41 11 46
+     trois / pas
+  L2 35 15 [1235] 46 / [123] 15 / [134] 12 32 12 [256]
+     vérs / lé / midi.
+=== S5
+  L1 46 12 [1346] / 41 11 46 / 35 15 [1235] 46
+     six / pas / vérs
+  L2 [123] 15 / [14] 26 44 21 42 [256]
+     lé / couchant.
+=== S6
+  L1 24 / 41 11 46 / 35 15 [1235] 46
+     un / pas / vérs
+  L2 [123] 15 / [1345] 13 [1235] 32 [256]
+     lé / nord.
+=== S7
+  L1 32 25 [1346] / 41 11 46 / 35 15 [1235] 46
+     deux / pas / vérs
+  L2 [123] / 11 14 31 15 [256]
+     l / aubé.
+=== S8
+  L1 [1235] 15 33 11 [1235] 32 15 / 21
+     régardé / an
+  L2 [125] 11 14 42 [256]
+     haut.
+=== S9
+  L1 [123] 12 31 15 [1235] 15 / [123] 15
+     libéré / lé
+  L2 32 26 [1346] / 41 11 [1235] 45 24 [256]
+     doux / parfun.
+```
+
+La `é` de sobra en `vérs`, `libéré` o `comméncé` es el glifo `15` de Barbier —fila 1, columna 5, el
+sonido `é`—, que el autor usa también donde el francés escribe `e` muda. No lo corregimos en la
+salida a propósito: lo que imprime el script es lo que hay dibujado.
+
+**Los pares se validan solos, sin necesidad de las tablas.** `41 11 46` (*pas*) aparece en **seis**
+de las nueve señales y `35 15 [1235] 46` (*vers*) en **seis**, con encuadres distintos. Un extractor
+con ruido no produce el mismo cuarteto en seis fotos.
+
+### La comprobación cruzada: píxeles contra bytes
+
+Hay una verificación mejor que las repeticiones, y no depende de los píxeles. El texto de las
+señales **también está guardado en la ROM**, en nueve bloques contiguos a partir de `0x2a73c2` (seis
+bytes de cabecera por bloque, luego el texto, terminador `0xFF`):
+
+| Señal | Offset | Bytes de texto |
 |---|---|---|
-| `S1` | `46 26 46 / 40 15 / 11 42 12 46 42 11 40` | `31 40 25 / 11 13 21 21 15 23 11 15 23` |
-| `S2` | `24 / 41 11 46 / 35 15 42 46` | `40 15 / 21 12 32 12 23` |
-| `S3` | `43 14 11 42 42 15 / 41 11 46` | `35 15 42 46 / 40 / 11 14 31 15 23` |
-| `S4` | `42 42 13 12 46 / 41 11 46` | `35 15 42 46 / 40 15 / 21 12 32 12 23` |
-| `S5` | `46 12 22 / 41 11 46 / 35 15 42 46` | `40 15 / 11 26 44 21 42 23` |
-| `S6` | `24 / 41 11 46 / 35 15 42 46` | `40 15 / 23 13 42 32 23` |
-| `S7` | `32 25 22 / 41 11 46 / 35 15 42 46` | `40 / 11 14 31 15 23` |
-| `S8` | `42 15 33 11 42 32 15 / 21` | `32 11 14 42 23` |
-| `S9` | `40 12 31 15 42 15 / 40 15` | `32 26 22 / 41 11 42 45 24 23` |
+| `S1` | `0x2a73c2` | 28 |
+| `S2` | `0x2a73e5` | 19 |
+| `S3` | `0x2a73ff` | 23 |
+| `S4` | `0x2a741d` | 23 |
+| `S5` | `0x2a743b` | 22 |
+| `S6` | `0x2a7458` | 19 |
+| `S7` | `0x2a7472` | 20 |
+| `S8` | `0x2a748d` | 15 |
+| `S9` | `0x2a74a3` | 20 |
 
-**Estos pares se validan solos, sin necesidad de la tabla.** Fíjate en las repeticiones entre
-señales distintas: `41 11 46` aparece en **seis** de las nueve, `35 15 42 46` en **seis** y `40 15`
-en **seis**. Un extractor con ruido no produce el mismo cuarteto en seis fotos con encuadres
-diferentes; eso es texto real con palabras repetidas. La segmentación y el conteo son consistentes.
+Sacas los glifos de los PNG por un lado y los bytes del binario por otro, y ves si se corresponden.
+`crosscheck_rom.py` hace exactamente eso:
 
-### Donde nos quedamos
+```
+$ ROM=pokemon-esmeralda.gba python3 crosscheck_rom.py
+biyeccion byte<->glifo: OK  (29 simbolos distintos)
+```
 
-El decode **no está cerrado del todo**, y decimos exactamente dónde falla.
+**29 símbolos distintos, biyección perfecta, ni una colisión**, y las longitudes cuadran señal por
+señal (las nueve de la tabla de arriba son también las longitudes en glifos de los nueve PNG). Es
+más: probando las **362.880** formas de emparejar las nueve capturas con los nueve bloques, **solo
+una es consistente** — la identidad. Cada cartel queda atado a su bloque de bytes por fuerza bruta,
+no por buena voluntad.
 
-La extracción es **reproducible pero no del todo correcta**, y conviene separar las dos cosas: el
-script devuelve siempre los mismos pares, y son los de la tabla de arriba; lo que no está garantizado
-es que cada par sea el que el autor dibujó.
+De propina sale **cómo lo guardó el autor**. Cada byte es un **bitmap braille** de la letra latina,
+con pesos `dot1=1, dot2=4, dot3=16, dot4=2, dot5=8, dot6=32`. Decodificados así, los bloques dicen:
 
-Las palabras que salen limpias (`pas`, `un`, `regardez`, los numerales) son cribs sólidas: son
-francés real y encajan entre sí en una frase con sentido. Pero **las celdas de tally alto se leen
-mal**, y el motivo es geométrico: cuando una columna tiene 5 o 6 puntos marcados, las barras quedan
-**pegadas** y se funden. Eso rompe los métodos de conteo que probamos:
+```
+S1   sys le cristal|blw commence.
+S2   z pas vers|le midi.
+S3   quatre pas|vers l aube.
+S4   trois pas|vers le midi.
+S5   six pas vers|le cykjt.
+S6   z pas vers|le nord.
+S7   dwx pas vers|l aube.
+S8   regarde j|haut.
+S9   libere le|dyx parfz.
+```
 
-- contar *runs* de píxeles oscuros → **infravalora** (cinco puntos pegados cuentan como uno);
-- filtrar por altura de barra para descartar el ornamento → **elimina justo esas celdas**, porque una
-  columna con muchos puntos produce barras tan altas como el ornamento;
-- muestrear por posición de fila (lo que hace el script publicado) → estable y reproducible, pero
-  con deriva en algunas fotos, y ahí es donde se pierde la distinción entre `42` y `54`.
+(`|` es el byte `0xFE`, el salto de línea del cartel.)
 
-Ése es el motivo concreto de que `vers` salga como `v·é·t·s` en vez de `v·é·r·s`: `r` es `(5,4)`,
-cinco puntos en la columna izquierda, y lo leemos como `(4,2)`. Todos los desajustes conocidos entre
-la tabla de pares y la glosa francesa son de ese tipo.
+Las letras raras son justo las que al francés hablado le sobran del alfabeto latino, recicladas como
+dígrafos: `z`=`un`, `y`=`ou`, `w`=`eu`, `j`=`an`, `k`=`ch`. Así `sys` es *sous*, `blw` es *bleu*,
+`cykjt` es *couchant* y `parfz` es *parfum*. El autor se montó un alfabeto de **29 símbolos** —26
+letras, espacio, punto y salto de línea—, y luego lo pintó mezclando los dos sistemas de escritura.
 
-Tampoco hemos reconstruido el recorrido completo paso a paso ni lo hemos andado dentro del juego.
+Esto cierra el decode: la lectura de los carteles no descansa en cribs francesas ni en corregir
+celdas a mano. Está atada byte a byte a lo que el autor escribió.
 
-No hemos ajustado la tabla ni la convención para que saliera "aroma nocturno". Con la respuesta
-delante es facilísimo mover un parámetro hasta que "salga", y eso no es un decode: es un crib
-autoconfirmado. **Publicamos el modelo, el bug de segmentación, los pares y el script; el afinado
-del tally alto queda abierto.**
+Una cautela sobre el orden, que aquí importa porque lo que se lee son instrucciones: **`S1`…`S9` es
+el orden de los ficheros**, que resulta ser también el orden en que los bloques están guardados en la
+ROM. Que `S1` abra —*"bajo el cristal azul, empieza"*— y que `S8` y `S9` cierren encaja con el
+contenido. El orden de los seis pasos intermedios es heredado de esa numeración, no probado sobre el
+mapa.
 
 ## 5. El final del recorrido, y dónde estaba de verdad la pista
 
@@ -370,9 +504,10 @@ Con eso se cierra la cadena:
 1. OSINT → Moviplaya 2005 repartía el Ori-Ticket → Isla Origen → Deoxys.
 2. Diff de texto de la ROM → HÉCTOR (Centro Espacial de Mossdeep) → **FAIL TICKET** → puerto de
    CALAGUA → **FAIL ISLAND**.
-3. Las señales en night writing → **el recorrido a pasos** por la isla.
+3. Las señales (night writing + braille) → **el recorrido a pasos** por la isla: empieza bajo el
+   cristal azul, sur / este / sur / oeste / norte / este, y mira arriba.
 4. Al final del recorrido, usar **Dulce Aroma** (*Sweet Scent*) → el cristal azul responde y **se
-   abre un pasadizo**.
+   abre un pasadizo**. Es lo que pide `S9`, la última señal: *libérez le doux parfum*.
 5. Dentro de la cueva oculta hay un **entrenador**; al derrotarlo, el juego **genera** la contraseña
    —no la lleva escrita: ver abajo.
 
@@ -429,9 +564,39 @@ recorrido.
 
 `keygen.py` reproduce todo esto **sin la ROM**: las 76 bytes de las tablas van embebidas (son datos
 del autor, no de la Emerald comercial) y trae una función que las vuelve a extraer del binario, para
-quien lo tenga, y confirma que las embebidas son las de verdad. Aviso de método, por coherencia con
-el resto: esto es *reversing estático*, no lo jugamos en mGBA; la cadena se cierra sobre el binario,
-que es una prueba más fuerte que andar el recorrido, pero conviene decir que no se anduvo.
+quien lo tenga, y confirma que las embebidas son las de verdad.
+
+Aviso de método: todo lo de arriba es *reversing estático*, deducido sobre el binario. La
+comprobación de que la rutina reconstruida es la misma que la compilada llegó después, jugando — la
+sección siguiente.
+
+### El reto, jugado: NIGHT CAVE
+
+El nivel se ha jugado entero después, con calma, y cierra la cadena por la otra punta: se anda el
+recorrido que dictan las señales, se responde al cristal azul con **Dulce Aroma**, se abre el
+pasadizo, se gana el combate del fondo y **el juego escribe la contraseña en pantalla**. Es
+exactamente la salida de `keygen.py`: la rutina reconstruida en Python y la rutina compilada dentro
+de la ROM producen la misma cadena. `4roM4Noc7urNo`.
+
+Y el combate no es un trámite narrativo. `gTrainers[0x357]` ya adelantaba el equipo —MAGNETON,
+ELECTRODE, PORYGON2, MANECTRIC, METAGROSS, niveles 55–65—: es un especialista eléctrico con el
+nivel al que la Emerald original remata la Liga, y cierra con un METAGROSS que no es eléctrico y
+que pega fuerte. Después de todo el camino a ciegas, todavía hay que ganar.
+
+La zona donde pasa todo esto **tiene nombre**, y está en la tabla de nombres de zona de la ROM:
+
+```
+0x5a2a4c   "NIGHT CAVE"
+0x22e072   "Enhorabuena, solver."
+```
+
+Ahí está la tercera pata del chiste del autor. Las señales están en *night writing*, la escritura
+nocturna de Barbier; la cueva se llama **NIGHT CAVE**; y la contraseña es *aroma **nocturno***. La
+palabra que ata el reto entero está puesta hasta en el rótulo de la puerta. Y el
+*"Enhorabuena, solver."* de `0x22e072` —veinticuatro bytes después del diálogo de derrota que
+dispara el keygen, en `0x22e05a`—
+es el autor rompiendo la cuarta pared para saludar a quien está jugando, no a quien está
+desensamblando.
 
 ### La pista que buscamos donde no estaba
 
@@ -470,6 +635,12 @@ Y **una** está en castellano:
 Una sola aparición en 16 MB, y es la del autor. No hay ninguna otra fuente posible para esa pista
 que el propio binario.
 
+Y hay un segundo golpe, que solo se ve ahora que las señales están cerradas: **`S9` dice
+"liberad el dulce aroma"**. Mientras buscábamos en wikis qué era Dulce Aroma, el último cartel de la
+isla lo estaba pidiendo a la cara — en night writing y en francés, pero pidiéndolo. La pista no
+estaba solo en el binario: estaba en el puzzle que teníamos a medio leer. Si el artefacto es un
+puzzle, acábalo antes de salir a buscar fuera.
+
 ### Cómo se resolvió de verdad
 
 Con honestidad, y son dos cosas distintas que conviene no mezclar:
@@ -487,6 +658,13 @@ Lo decimos porque cambia la lectura de todo lo anterior: **el decode de las señ
 *explica* el reto, no lo que lo resolvió**. Un writeup que presentara el camino largo como si
 hubiera sido el nuestro estaría mintiendo sobre el proceso.
 
+Y una tercera, que llegó al revisar esto y es la que ordena las otras dos: **el análisis del binario
+fue un atajo**. El autor diseñó el nivel para jugarse —las señales se descifran mirándolas, el
+recorrido se anda, HÉCTOR se gana y la contraseña sale en pantalla—, y ninguna de las dos vías que
+tomamos durante el concurso pasó por ahí. Eso no rebaja el reversing: por el binario se llega antes
+y se explica más —de ahí sabemos que hay un keygen, dónde vive su tabla y por qué las señales
+mezclan dos escrituras—, pero es leer la partitura y no tocarla. La puerta principal era la otra.
+
 ## 6. La contraseña
 
 ```
@@ -498,12 +676,15 @@ pasadizo —**Dulce Aroma**— más el sistema con el que están escritas las se
 que es literalmente **escritura nocturna** (Barbier lo diseñó para leer de noche sin luz). Aroma y
 nocturno, las dos mitades de la contraseña, son las dos mitades del reto.
 
+Y *nocturno* llega por tres sitios, no por dos: el *night writing* de los carteles, la zona
+—**NIGHT CAVE**— y la propia contraseña. El autor puso la palabra hasta en el rótulo de la puerta.
+
 ## Reproducir
 
 **La ROM y el save no se redistribuyen aquí**: son un juego comercial. Se bajan del nivel 4 de Solve
 It en `hackit.party.eus`, y los comandos asumen que los tienes en este directorio con estos nombres.
-Lo que sí va publicado es el instrumental y las nueve capturas, así que **`nightwriting.py` y
-`keygen.py` corren tal cual sin necesidad de la ROM**.
+Lo que sí va publicado es el instrumental y las nueve capturas, así que **`nightwriting.py`,
+`nightwriting2.py` y `keygen.py` corren tal cual sin necesidad de la ROM**.
 
 | Fichero | Qué hace |
 |---|---|
@@ -512,13 +693,24 @@ Lo que sí va publicado es el instrumental y las nueve capturas, así que **`nig
 | `parse_save.py` | estructura Gen 3: secciones, checksums, cajas |
 | `deoxys.py` / `deoxys_full.py` | desencriptado y volcado del Deoxys |
 | `gen3text.py` | decodificador del charset Gen 3 |
-| `nightwriting.py` | extractor de las señales: rejilla 6×2, tallies y tabla de Barbier |
+| `nightwriting.py` | extractor v1: rejilla 6×2, tallies y tabla de Barbier — el que se queda a medias |
+| `nightwriting2.py` | extractor v2: distingue celda fina (night writing) de celda gruesa (braille) y lee las nueve señales enteras |
+| `crosscheck_rom.py` | coteja los glifos de los PNG contra el texto de las señales en la ROM — *necesita la ROM* |
 | `keygen.py` | reproduce la contraseña sin la ROM (special `0x1F4`, 76 bytes de tablas embebidas) |
 | `imagenes-isla-fail/` | las nueve capturas de las señales |
 
 Los scripts localizan sus datos junto a sí mismos, así que da igual desde dónde los lances. Los
 fragmentos inline de abajo sí esperan que estés **en este directorio** (`solve-it/4/`).
-Dependencias: `pillow`, `numpy` y `scipy` para `nightwriting.py`; el resto es Python de serie.
+Dependencias: `pillow`, `numpy` y `scipy` para `nightwriting.py`; `pillow` y `numpy` para
+`nightwriting2.py`; el resto es Python de serie.
+
+Dos rutas configurables por entorno, para no depender del sitio donde estén los ficheros:
+
+- `nightwriting2.py` busca las capturas en `$SENALES`, y si no está, en `imagenes-isla-fail/` junto
+  al script — que es donde van en este repo.
+- `crosscheck_rom.py` **necesita la ROM**, que no se redistribuye: la lee de `$ROM`, y si no está,
+  de `pokemon-esmeralda.gba` junto al script. Importa `nightwriting2.py`, así que los dos tienen que
+  vivir en el mismo directorio.
 
 ```bash
 # 1. el save no tiene flag
@@ -544,12 +736,16 @@ for kw in ('FAIL ISLAND','FAIL TICKET','CALAGUA','IMOBILIS','ESPACIAL'):
 EOF
 
 # 3. jugarlo
-./jugar.sh         # mGBA con la ROM y el save cargados
+./jugar.sh                # mGBA con la ROM y el save cargados
 
-# 4. extraer las señales de Fail Island (rejilla 6x2 + tallies)
-python3 nightwriting.py           # imprime los pares y su lectura con la tabla de Barbier
+# 4. extraer las señales de Fail Island
+python3 nightwriting.py           # v1: solo night writing -> se queda a medias
+python3 nightwriting2.py          # v2: night writing + braille -> las nueve señales enteras
 
-# 5. la contraseña: reproducir el keygen del entrenador (special 0x1F4)
+# 5. verificar la extracción contra el texto de las señales en la ROM
+ROM=pokemon-esmeralda.gba python3 crosscheck_rom.py   # -> biyeccion OK, 29 simbolos
+
+# 6. la contraseña: reproducir el keygen del entrenador (special 0x1F4)
 python3 keygen.py                 # sin ROM -> 4roM4Noc7urNo
 python3 keygen.py pokemon-esmeralda.gba   # además comprueba las tablas contra el binario
 ```
@@ -564,7 +760,8 @@ python3 keygen.py pokemon-esmeralda.gba   # además comprueba las tablas contra 
    nada: **la frase la escribió el autor y estaba en la ROM**, en el mismo volcado de texto inyectado
    que ya habíamos generado nosotros horas antes. Cuando alguien ha metido contenido en un binario,
    el binario es la fuente autorizada sobre ese contenido — no internet. Antes de salir a buscar
-   conocimiento externo, grepea lo que ya tienes.
+   conocimiento externo, grepea lo que ya tienes. Y si el artefacto es un puzzle, **acábalo**: `S9`
+   decía *"liberad el dulce aroma"* y llevaba horas dándonos la respuesta a medio leer.
 3. **Tener la herramienta correcta no basta: hay que hacerle la pregunta correcta.** El decodificador
    Gen 3 existía una hora antes de que sirviera para algo, usado para una pregunta menor.
 4. **Los assets "temáticos" son el señuelo por defecto.** El save era lo primero que todo el mundo
@@ -589,6 +786,15 @@ python3 keygen.py pokemon-esmeralda.gba   # además comprueba las tablas contra 
 9. **Resuelve los identificadores contra la fuente, no contra tu memoria.** "met location 187" se
    tradujo volcando `gRegionMapEntries` de la propia ROM. Es más rápido que buscarlo y no se
    equivoca.
+10. **Cuando algo se lee a medias, desconfía del diagnóstico que no te obliga a tocar el modelo.**
+   *"El extractor mide mal las celdas de tally alto porque las barras se funden"* era cómodo, encajaba
+   con los síntomas y era falso. Lo que pasaba —dos sistemas de escritura en el mismo cartel— se veía
+   con una regla: seis píxeles de barra contra diecinueve. Un diagnóstico que culpa al instrumento y
+   deja intacta la hipótesis es sospechoso por construcción.
+11. **Una verificación buena no depende del canal que estás poniendo en duda.** Las repeticiones
+   entre señales validaban la extracción contra sí misma; cotejar los glifos contra los bytes de la
+   ROM la valida contra el autor. Cuando el mismo artefacto existe en dos representaciones, cruzarlas
+   vale más que cualquier heurística sobre una sola.
 
 Sobre el proceso: el reto se trabajó con asistencia de IA y el reparto fue bastante nítido. La
 máquina hizo todo el tramo binario y lo hizo bien —parsear el save Gen 3 con sus checksums,
@@ -598,3 +804,8 @@ horas. Donde se atascó fue en el último tramo, insistiendo en resolver por pí
 lectura que un humano cierra en diez minutos, y anunciando varias veces que paraba sin parar. Es el
 patrón más caro de trabajar así: **un asistente no tiene coste percibido de seguir intentándolo, así
 que el criterio de parada lo tienes que poner tú, y conviene ponerlo por adelantado.**
+
+El decode sí acabó cerrándose por la vía automática, pero no insistiendo: midiendo. Lo que
+desatascó las celdas que se resistían no fue otra heurística encima de las tres anteriores, fue
+cambiar la pregunta —de *"¿por qué cuenta mal esta celda?"* a *"¿cuántas barras
+tiene y de qué alto?"*— y aceptar la respuesta, que era que ahí había otro sistema de escritura.
