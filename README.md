@@ -150,16 +150,14 @@ que no comparta el marco.
 
 ## Créditos
 
-El concurso lo montan **Ontza**, que lleva años en esto, y **Owen**, que estrenaba puesto, con el
-equipo organizador del Hack It de la Euskal Encounter. Los retos son suyos: trece niveles, trece
-ideas distintas, y varios de ellos con una vuelta de tuerca que da gusto encontrar. Gracias por el
-curro.
+Los retos los montan **Ontza**, que lleva años en esto, y **Owen**, que estrenaba puesto — y que
+además es colega nuestro: en otras ediciones nos peleábamos los Hack It juntos, y este año estaba al
+otro lado, poniéndolos. Trece niveles, trece ideas distintas, y varios con una vuelta de tuerca que
+da gusto encontrar. Gracias por el curro.
 
-Gracias también a **t3ndo**, **servida** y **garridinsi**, el resto del equipo **PeruEsClave** — la
-edición la ganamos entre los cuatro. Varios niveles los cerraron ellos, incluidos algunos de los
-cierres que estos writeups atribuyen a *"un compañero de equipo"*. No desglosamos qué hizo cada uno
-porque no lo tenemos registrado con seguridad, y preferimos un agradecimiento sin desglosar a uno
-mal atribuido.
+**PeruEsClave** fuimos cuatro: **t3ndo**, **servida**, **garridinsi** y el que firma estos writeups.
+La edición se ganó entre los cuatro, y los writeups van escritos en «nosotros» porque así se
+trabajó.
 
 Los writeups son nuestros y los errores también.
 
