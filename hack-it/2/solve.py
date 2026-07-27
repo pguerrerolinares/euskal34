@@ -14,15 +14,28 @@ El camino, que el reto da entero:
      m = p/v. El fichero que falta ES el objetivo.
   3. p/v no es una division pixel a pixel (probada, no da nada): en la formula
      del momento, p y v son VECTORES y m el escalar que los relaciona. Dividir
-     vectores es proyectar, m = (p.v)/(v.v). Cada fila de las imagenes es un
-     vector de 768 componentes; como no sabes que fila va con que fila, las
-     proyectas todas contra todas. Sale una matriz 256x256 -- el tamano que el
-     HTML anunciaba para m.png.
-  4. Hecho con v en crudo no sale nada, porque las velocidades estan dominadas
-     por un flujo de Hubble proporcional a las posiciones (v = 0.1*(q - 0.9*<q>),
-     la escala la da el chunk Whitespace de v.png). Hay que restarlo primero: la
-     proyeccion tiene que ir sobre lo que ese modelo NO explica.
-     Con v crudo: 0 de 972 celdas. Restando el Hubble: 216 de 972.
+     vectores es proyectar: (v.q)/(q.q). Cada fila de las imagenes es un vector
+     de 768 componentes; como no sabes que fila va con que fila, las proyectas
+     todas contra todas.
+  4. UNICO PASO NO DEDUCIBLE: si el "vector" es la fila o la columna. Hay cuatro
+     combinaciones, las cuatro dan 256x256, y se resuelve probandolas:
+     filas x filas 216 / columnas x columnas 0 / cruzadas 1 y 0. (El tamano
+     anunciado en el HTML confirma que es una tabla de todos contra todos, no
+     una division punto a punto -- pero no discrimina la orientacion.)
+  5. La primera proyeccion TE ESCRIBE EL MODELO: diag(proj(v,q)) = 0.0996, o sea
+     cada fila de v es 0.1 veces la misma fila de q. No hace falta ajustar nada.
+  6. Restas eso y vuelves a proyectar. No es "quitar fisica": las filas de q no
+     son ortogonales (se parecen ~1/sqrt(768)=0.036), asi que el termino conocido
+     0.1*q se derrama fuera de la diagonal con un ruido de 3.7e-3, 4.4x el ruido
+     de fondo real (8.2e-4). El mensaje vale -9.2e-3: 2.5 sigma sobre el derrame
+     (invisible) y 12.1 sigma una vez cancelado.
+  7. Renderizas la matriz entera y el texto se lee. Sin ventanas ni umbrales.
+
+  El chunk Whitespace de v.png (v_min=-0.2, v_max=0.2) NO hace falta: repitiendo
+  todo con los enteros crudos y leyendo el coeficiente de la diagonal (que alli
+  vale 0.249038) sale el mismo bitmap salvo un pixel. Lo que aporta es notacion:
+  su keyword es `h` (constante de Hubble) y llama `q` al contenido de p.png
+  (posicion, en notacion hamiltoniana). Dice que magnitud hay en cada fichero.
 
 Por debajo es esteganografia por espectro ensanchado: el autor sumo a 36 filas
 de v multiplos minusculos de ciertas filas de p, cada una haciendo de portadora.
@@ -43,22 +56,27 @@ THRESHOLD = -3.5                              # en sigmas; el dibujo aguanta de 
 ESPERADO = "M4dF0rmUL4"
 
 
+def proyecta(X, Y):
+    """(x.y)/(y.y) para cada fila de X contra cada fila de Y. El divisor es
+    cosmetico: sin el salen 212 celdas en vez de 216. Lo que importa es X @ Y.T."""
+    P = (Y - Y.mean(1, keepdims=True)).reshape(len(Y), -1)
+    R = (X - X.mean(1, keepdims=True)).reshape(len(X), -1)
+    return R @ P.T / (P ** 2).sum(1)
+
+
 def reconstruye_m():
-    """m = p/v, con p y v vectores: la proyeccion de cada fila contra cada fila."""
-    q = read16('p.png').astype(np.float64) / 65535.0           # posiciones en [0,1]
-    v = read16('v.png').astype(np.float64) / 65535.0 * 0.4 - 0.2   # escala del Whitespace
+    """m = p/v despejada: proyectar, leer el modelo en la diagonal, cancelarlo."""
+    q = read16('p.png').astype(np.float64) / 65535.0
+    v = read16('v.png').astype(np.float64) / 65535.0 * 0.4 - 0.2
 
-    res = v - 0.1 * q                                          # quita el flujo de Hubble
-
-    P = (q - q.mean(1, keepdims=True)).reshape(256, -1)        # filas de p como vectores
-    R = (res - res.mean(1, keepdims=True)).reshape(256, -1)
-
-    m = R @ P.T / (P ** 2).sum(1)                              # (p.v)/(v.v), todas contra todas
-    return m / m.std()                                         # en sigmas
+    alpha = np.diag(proyecta(v, q)).mean()      # el dato escribe su propio modelo: 0.0996
+    m = proyecta(v - alpha * q, q)              # cancela el derrame de la portadora
+    return m / m.std(), alpha                   # en sigmas
 
 
 def main():
-    m = reconstruye_m()
+    m, alpha = reconstruye_m()
+    print("coeficiente leido en la diagonal: %.6f" % alpha)
     print("m reconstruida:", m.shape, "(el HTML anunciaba m.png de 256x256)\n")
 
     glyph = m[np.ix_(ROWS, COLS)] < THRESHOLD

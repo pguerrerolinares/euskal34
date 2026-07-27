@@ -213,19 +213,41 @@ No es un conejo sacado de la chistera. El nivel lo explica entero, en cuatro pas
    `m = p/v`. El fichero que falta es el objetivo, no un guiño.
 3. **Dividir vectores es proyectar.** `p/v` no es una división píxel a píxel — probada, no da nada,
    y no tiene por qué darlo: en la fórmula del momento `p` y `v` son vectores y `m` el escalar que
-   los relaciona, así que `m = (p·v)/(v·v)`. Cada fila es un vector de 768 componentes; como no
-   sabes qué fila va con cuál, las proyectas todas contra todas. Sale una matriz **256×256** —
-   exactamente lo que el HTML anunciaba.
-4. **Antes hay que quitar la física conocida.** Con `v` en crudo la proyección solo mide el flujo de
-   Hubble y `m` sale plana. Hay que proyectar sobre lo que el modelo **no** explica.
-   Con `v` crudo: **0 de 972** celdas. Restando el Hubble: **216 de 972**.
+   los relaciona, así que se proyecta: `(v·q)/(q·q)`. Cada fila es un vector de 768 componentes; se
+   proyectan todas contra todas. El `256×256` del HTML confirma que es una **tabla de todos contra
+   todos** y no una división punto a punto — pero ojo, no discrimina la orientación: las cuatro
+   posibles dan 256×256.
+4. **ÚNICO PASO NO DEDUCIBLE: ¿la fila o la columna?** Se resuelve probando, una línea cada una:
+   `filas×filas` **216** / `columnas×columnas` 0 / cruzadas 1 y 0. Si ya has caracterizado el
+   residuo, el dato orienta antes de probar: exceso de desviación por filas 0,1160 contra 0,0526 por
+   columnas, y las filas con exceso están en cuatro bloques contiguos de nueve mientras que las
+   columnas están dispersas.
+5. **La primera proyección te escribe el modelo.** `diag(proj(v,q)) = 0,099615`, con el resto casi
+   cero: cada fila de `v` es 0,1 veces **la misma** fila de `q`. Ningún ajuste, ningún barrido.
+6. **Cancelas eso y vuelves a proyectar.** No es "quitar física": las filas de `q` no son ortogonales
+   (se parecen ~1/√768 = 0,036), así que el término conocido `0,1·q` se derrama fuera de la diagonal
+   con un ruido de **3,7e-3**, 4,4× el ruido de fondo real (8,2e-4). El mensaje vale −9,2e-3: **2,5σ**
+   sobre el derrame (invisible) y **12,1σ** una vez cancelado.
+7. **Renderizas la matriz entera y se lee.** Sin ventanas, sin umbrales, sin saber dónde mirar.
 
 ```python
-res = v - 0.1*q                                  # lo que el flujo de Hubble no explica
-P   = centra_filas(q).reshape(256,-1)
-m   = centra_filas(res).reshape(256,-1) @ P.T / (P**2).sum(1)     # (p·v)/(v·v)
-glyph = m[filas_de_banda, 114:141] < -3.5        # bitmap 36x27
+alpha = diag(proj(v,q)).mean()                   # 0.099615, el dato escribe su modelo
+m     = proj(v - alpha*q, q)                     # cancela el derrame de la portadora
 ```
+
+El divisor `(q·q)` es cosmético (sin dividir, 212 celdas en vez de 216). La ventana de filas y
+columnas y el umbral −3,5σ son cosa nuestra, elegidos a posteriori para tabular controles: para leer
+el texto no hace falta ninguno de los dos.
+
+**El chunk Whitespace no es una llave.** Repitiendo todo con los enteros crudos y leyendo el
+coeficiente de la diagonal (allí 0,249038 = 0,1/0,4) sale el mismo bitmap salvo un píxel: 215/972.
+Lo que aporta es notación — su keyword es `h` (constante de Hubble reducida) y llama `q` al
+contenido de `p.png` (posición, notación hamiltoniana). Dice qué magnitud hay en cada fichero.
+
+**Y este nivel no tuvo pistas del organizador**, al contrario que el 3, donde la Pista 4 era la
+solución. Verificado contra cuatro capturas de `/hackit/2/`, dos posteriores a que el nivel cayera:
+el único texto propio del reto en todas es el comentario de `m.png`. No había red, y el camino
+estaba entero dentro de los dos ficheros.
 
 Y ahí está la contraseña, escrita. El chiste cierra el nivel: `M4dF0rmUL4` = *"Mad Formula"* es el
 nombre de la fórmula que has tenido que despejar para poder leerla.
