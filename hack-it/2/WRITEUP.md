@@ -6,10 +6,11 @@
 > decoración, que las cuatro bandas del residuo eran ruido del generador y que la contraseña era
 > solo un juego de palabras del título.
 >
-> **La contraseña está escrita con letras dentro de los datos.** Es un bitmap de 36×27 en la matriz
-> de correlación entre las filas del residuo de velocidades y las filas de posiciones: cuatro líneas
-> de 9 píxeles —`M4d` / `F0r` / `mUL` / `4`—. Las "cuatro bandas de nueve filas" que medimos con tres
-> decimales y llamamos ruido **son exactamente esas cuatro líneas de texto**.
+> **La contraseña está escrita con letras dentro de los datos**, y el reto explica cómo llegar:
+> falta `m.png`, los nombres dan `p = m·v`, y despejar `m = p/v` con `p` y `v` como vectores es
+> proyectar fila contra fila. Sale una matriz 256×256 —el tamaño que el HTML anunciaba para
+> `m.png`— con un bitmap de cuatro líneas: `M4d` / `F0r` / `mUL` / `4`. Las "cuatro bandas de nueve
+> filas" que medimos con tres decimales y llamamos ruido **son esas cuatro líneas de texto**.
 >
 > Reproducible con `python3 solve.py`. El análisis de abajo se conserva íntegro porque es correcto
 > hasta donde llega —y porque el error de interpretación es la parte más instructiva del nivel—,
@@ -201,16 +202,33 @@ Dos cosas más que también se midieron mal en la primera versión, por si sirve
   común. La de aquí sobrevive: tras quitarlo quedan 54/23/48/9 columnas por encima de 3σ en las
   bandas contra 0-3 en bloques equivalentes del fondo.
 
-## 6b. Dónde estaba: el bitmap
+## 6b. El camino que el reto daba: reconstruir m.png
 
-El texto no está en ninguna de las dos imágenes, sino en la relación entre ambas:
+No es un conejo sacado de la chistera. El nivel lo explica entero, en cuatro pasos:
+
+1. **Falta un fichero y te enseñan su nombre.** El HTML comenta
+   `<img src="/hackit/2/static/m.png" width="256" heigth="256">`, que da 404. Retén el `256x256`.
+2. **Los nombres son la fórmula.** `p`, `v` y una `m` ausente, con un título que dice *Physics*:
+   `p = m·v`, el momento lineal. Y el reto no pide reconocer la fórmula, pide **despejarla**:
+   `m = p/v`. El fichero que falta es el objetivo, no un guiño.
+3. **Dividir vectores es proyectar.** `p/v` no es una división píxel a píxel — probada, no da nada,
+   y no tiene por qué darlo: en la fórmula del momento `p` y `v` son vectores y `m` el escalar que
+   los relaciona, así que `m = (p·v)/(v·v)`. Cada fila es un vector de 768 componentes; como no
+   sabes qué fila va con cuál, las proyectas todas contra todas. Sale una matriz **256×256** —
+   exactamente lo que el HTML anunciaba.
+4. **Antes hay que quitar la física conocida.** Con `v` en crudo la proyección solo mide el flujo de
+   Hubble y `m` sale plana. Hay que proyectar sobre lo que el modelo **no** explica.
+   Con `v` crudo: **0 de 972** celdas. Restando el Hubble: **216 de 972**.
 
 ```python
-res = v - 0.1*q                              # quita la parte lineal
-A   = normaliza_filas(centra(q))             # las 256 filas de p, unitarias
-C   = centra(res) @ A.T                      # C[i,k] = <fila i del residuo, fila k de p>
-glyph = C[filas_de_banda, 114:141] < -3.5    # bitmap 36x27
+res = v - 0.1*q                                  # lo que el flujo de Hubble no explica
+P   = centra_filas(q).reshape(256,-1)
+m   = centra_filas(res).reshape(256,-1) @ P.T / (P**2).sum(1)     # (p·v)/(v·v)
+glyph = m[filas_de_banda, 114:141] < -3.5        # bitmap 36x27
 ```
+
+Y ahí está la contraseña, escrita. El chiste cierra el nivel: `M4dF0rmUL4` = *"Mad Formula"* es el
+nombre de la fórmula que has tenido que despejar para poder leerla.
 
 ```
 ..##....##.....##.......#..      ......#####...####.........
@@ -282,8 +300,13 @@ Las reglas que sí quedan en pie, sustituyendo a la anterior:
 > que no predice ninguno de los detalles que ya has medido no es una explicación, es una etiqueta.
 
 > **Antes de más potencia estadística, cambia de representación.** La señal era invisible en el
-> espacio de la imagen y legible a simple vista en el espacio de correlación entre filas. Entre "aquí
-> no hay nada" y leerlo con los ojos no hay ningún cálculo difícil: hay un cambio de base.
+> espacio de la imagen y legible a simple vista en el de proyección entre filas. Entre "aquí no hay
+> nada" y leerlo con los ojos no hay ningún cálculo difícil: hay un cambio de base.
+
+> **El enunciado estaba en los nombres de los ficheros.** `p`, `v` y una `m` ausente de 256×256 no
+> eran un guiño temático: eran una instrucción con las dimensiones del resultado puestas. Nos
+> quedamos con la mitad —vimos la fórmula, nos gustó como chiste y sacamos la contraseña de ahí— sin
+> llegar a leerla como la operación que había que ejecutar sobre los datos.
 
 ## 8. Reproducir
 
