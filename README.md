@@ -5,7 +5,7 @@ Writeups de doce de los trece niveles del concurso de la EE34 (julio de 2026).
 ## Qué es esto
 
 La **Euskal Encounter** es la party informática que se celebra cada verano en Bilbao. Uno de sus
-concursos clásicos es el **Hack It**, organizado por *ontza* y su equipo sobre el Hack It
+concursos clásicos es el **Hack It**, organizado por *ontza*, *owen* y su equipo sobre el Hack It
 Framework, y jugado en `hackit.party.eus`. Se divide en dos tracks:
 
 - **Solve It** — siete niveles de lógica, criptografía, encodings, acertijos visuales y puzzles.
@@ -32,12 +32,18 @@ El primer puesto se decidió **por tiempo**: w0pr terminó también con 12 punto
 la velocidad de resolución. Conviene tenerlo presente al leer los writeups, porque varios cuentan
 horas gastadas en callejones sin salida — y ese era, literalmente, el margen.
 
-Los writeups cuentan también lo que no salió, y lo dejan marcado en vez de maquillarlo. **Cinco de
-los doce tienen algo abierto**: un reto que no cayó, una contraseña que nunca llegamos a extraer del
-servicio, una ruta de cierre que no pudimos repetir, un flequillo de extracción en un reto cuya
-mecánica sí está completa, y un cabo del enunciado que nadie ha conseguido explicar ni siquiera
-después de resolver el nivel. Cada uno dice cuál es su hueco y hasta dónde llega lo verificado. Un
-writeup que solo enseña la línea recta miente sobre cómo se resuelve esto de verdad.
+Los writeups cuentan también lo que no salió, y lo dejan marcado en vez de maquillarlo. **Tres de
+los doce tienen algo abierto**: un reto que no cayó (Hack It 6), una contraseña que nunca llegamos a
+extraer del servicio (Solve It 3) y un cabo del enunciado que nadie ha conseguido explicar ni
+siquiera después de resolver el nivel (Solve It 6). Cada uno dice cuál es su hueco y hasta dónde
+llega lo verificado.
+
+Otros dos lo tuvieron y ya no. El cierre de **Solve It 5** lo dio un compañero durante el concurso
+por una vía que en su momento no reprodujimos: ahora está documentada y verificada. Y el decode de
+las señales de **Solve It 4** se publicó a medias con un diagnóstico que resultó ser falso; ahora
+las nueve señales se leen enteras y la extracción está cotejada contra los bytes de la ROM. Un
+writeup que solo enseña la línea recta miente sobre cómo se resuelve esto de verdad — pero uno que
+deja un "abierto" cuando ya no lo está, también.
 
 ## Los trece niveles
 
@@ -64,7 +70,8 @@ segunda mano y no la hemos podido verificar, así que no la damos por buena.
 
 **Solve It 5** sí tiene writeup; el cierre también lo dio un compañero, durante el propio concurso,
 y por una vía que en su momento no reprodujimos. Esta revisión ya la deja documentada y verificada.
-Se publica igual, porque lo que se aprendió por el camino es de lo más aprovechable de la serie.
+El camino largo que sí recorrimos en directo va publicado entero, porque lo que se aprendió por él
+es de lo más aprovechable de la serie.
 
 ## Los retos, uno a uno
 
@@ -80,7 +87,8 @@ cartel.
 El servidor te insulta en cada conexión, pero nunca lee lo que escribes.
 
 **Solve It 4 — Moviplaya 2005.** Una ROM de Pokémon Esmeralda con una partida guardada. El save es
-lo primero que mira todo el mundo, y por eso no lleva nada dentro.
+lo primero que mira todo el mundo, y por eso no lleva nada dentro. Lo bueno va inyectado en el
+binario, y las señales de la isla que se inventó el autor están escritas en dos sistemas a la vez.
 
 **Solve It 5 — Drawings in the wall.** Tres líneas de símbolos geométricos encontrados en una cueva,
 y nada más. La respuesta estaba en el título del reto desde el primer minuto y tardamos catorce
@@ -142,9 +150,14 @@ que no comparta el marco.
 
 ## Créditos
 
-Los retos son de **ontza** y el equipo organizador del Hack It de la Euskal Encounter. Trece
-niveles, trece ideas distintas, y varios de ellos con una vuelta de tuerca que da gusto encontrar.
-Gracias por el curro.
+El concurso lo montan **ontza** y **owen**, con el equipo organizador del Hack It de la Euskal
+Encounter, y los retos son suyos. Trece niveles, trece ideas distintas, y varios de ellos con una
+vuelta de tuerca que da gusto encontrar. Gracias por el curro.
+
+Gracias también a **t3ndo** y **servida**, del equipo **PeruEsClave**: varios niveles de esta
+edición los cerraron ellos, incluidos algunos de los cierres que estos writeups atribuyen a *"un
+compañero de equipo"*. No desglosamos qué hizo cada uno porque no lo tenemos registrado con
+seguridad, y preferimos un agradecimiento sin desglosar a uno mal atribuido.
 
 Los writeups son nuestros y los errores también.
 
@@ -152,8 +165,8 @@ Los writeups son nuestros y los errores también.
 
 Este repositorio se publica bajo licencia **MIT** (ver [LICENSE](LICENSE)). Esa licencia cubre
 **nuestros writeups y scripts** — el análisis, el código de resolución, las herramientas propias.
-**No cubre los retos en sí ni sus materiales**, que son de **ontza** y el equipo organizador del
-Hack It, o de terceros cuando el reto los cita.
+**No cubre los retos en sí ni sus materiales**, que son de la organización del Hack It —**ontza**,
+**owen** y su equipo—, o de terceros cuando el reto los cita.
 
 Algunos writeups incluyen la imagen del propio nivel porque sin ella no se entienden: la
 inscripción de Solve It 5, las capturas de ruido de Solve It 6, los PNG de datos de Hack It 2. Son
