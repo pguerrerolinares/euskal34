@@ -265,8 +265,11 @@ Otros hallazgos de esa pasada en frío:
   en el Vocab del reto y el orden natural = 0,027. Comparado con el `Vocab.DD`
   original de TempleOS: **permutación pura**, mismas 7569 palabras, ninguna añadida
   ni quitada. El autor colocó las palabras-respuesta por índice.
-- **El marcador va siempre en la última línea con texto** del pasaje, lo que fija el
-  `start` de cada momento a dos valores posibles.
+- ~~**El marcador va siempre en la última línea con texto** del pasaje.~~ **Falso, y
+  aquí queda como aviso.** Se generalizó desde M1, el único que se miró a mano, donde
+  sí cae en la línea 19 de 20. En los otros siete cae donde le toca: posiciones 7, 8,
+  10, 13, 15, 15 y 17 de la ventana. El marcador se busca **en toda la ventana**
+  `[start, start+19]`, no al final (ver `chain.py`).
 - Un barrido exhaustivo del velo (todas las claves XOR en todos los offsets,
   permutaciones de bits y bytes, sustitución hex por CSP, keystreams) demostró que
   **no era ninguna operación elemental**. Correcto: hacía falta la Pista 4.
@@ -290,10 +293,12 @@ El `& 0x7FFF...` es "los momentos siempre son positivos" (bit 63 a cero; no afec
 al pasaje, que vive en los bits 24–4).
 
 La clave que nadie había probado: **la máscara se regenera en cada momento** con sus
-propios bits no escuchados. Por eso una máscara fija derivada de la semilla inicial
-nunca funcionaba.
+propios bits no escuchados. Una máscara fija derivada de la semilla inicial destapa
+el primer hex —claro: la semilla inicial *es* el momento 1— y da basura del segundo
+en adelante. Ese "funciona una vez" es lo que la mantuvo viva más de la cuenta.
 
-Primera prueba, sobre el hex que revela el momento 1:
+Primera prueba, sobre el hex que va en el margen del momento 1 (y que por tanto
+revela el 2):
 
 ```
 K38loK4  mask=C156334B0A8AC714  v=CE582FE2C93D9073  start=38356
@@ -330,7 +335,7 @@ marcadores quedan explicados sin sobras.
 ## Reproducir
 
 Partiendo de `temple.qcow2`, la imagen que entrega el reto. El árbol de ficheros no viene
-hecho: **lo generas tú** en el paso 1, y los dos pasos siguientes trabajan sobre él.
+hecho: **lo generas tú** en el paso 1, y todo lo demás trabaja sobre él.
 
 ```bash
 # 1. la imagen a raw (el extractor trabaja sobre raw, sin montar y sin root)
@@ -353,15 +358,64 @@ es uno de ellos —de ahí que la salida se llame `Bible.TXT.txt`—. Sin `TOSZ`
 `.Z` en crudo y el `grep` del paso 3 no encuentra nada. Y `--strip` quita el markup DolDoc, que es
 lo que hace el texto grepeable de verdad.
 
-Modelo del oráculo (validado contra la VM real):
+El paso 4 necesita la VM levantada. La cadena entera, en cambio, sale del árbol del
+paso 2 sin arrancar nada:
+
+```bash
+# 5. los ocho momentos, las siete máscaras y la frase
+python3 chain.py --dump ./dump
+```
 
 ```
-r21    = bitrev21((momento >> 4) & 0x1FFFFF)
-start  = r21 % (ST_BIBLE_LINES - 19) + 1        # ST_BIBLE_LINES = 100110
-r17    = r21 >> 4
-palabra = Vocab[r17 % 7569]
-# el marcador va en la última línea con texto de [start, start+19]
+vocabulario: 7569 palabras · ST_BIBLE_LINES: 100110
+
+M1: the       start= 86786 marcador= 86804  hex=0F0E1CA9C3B75767 mascara=C156334B0A8AC714 -> 4E582FE2C93D9073
+M2: holy      start= 38356 marcador= 38365  hex=0797656139F084EE mascara=CB3AF703E17B6907 -> 4CAD9262D88BEDE9
+M3: spirit    start= 10709 marcador= 10715  hex=7FB4D2C13C064614 mascara=2BA5A9E4F6A85615 -> 54117B25CAAE1001
+M4: speaks    start=  4331 marcador=  4345  hex=2F2A64736844BA4E mascara=5B3CCE7D4E545A33 -> 7416AA0E2610E07D
+M5: through   start= 36971 marcador= 36983  hex=429EC6812D21D91C mascara=3F8F4DDABFDA2138 -> 7D118B5B92FBF824
+M6: a         start= 40152 marcador= 40168  hex=31FF6015E1B42126 mascara=5705096309CA3FAD -> 66FA6976E87E1E8B
+M7: stop      start= 92674 marcador= 92681  hex=61F163FF97ECB00B mascara=9D94E7CC9D3B3FB3 -> 7C6584330AD78FB8
+M8: watch     start= 26161  terminador
+
+the holy spirit speaks through a stop watch
+(8 instantes, 7 velos, 1 terminador)
 ```
+
+### Modelo del oráculo
+
+Validado contra la VM real y reimplementado en `chain.py`:
+
+```
+r21     = bitrev21((momento >> 4) & 0x1FFFFF)
+start   = r21 % (ST_BIBLE_LINES - 19) + 1       # ST_BIBLE_LINES = 100110
+r17     = r21 >> 4
+palabra = Vocab[r17 % 7569]
+# el marcador está en algún punto de [start, start+19]
+```
+
+Tres detalles que no se ven leyendo el writeup y sin los cuales no se reimplementa.
+Los tres cuestan horas si se descubren por su cuenta:
+
+1. **HolyC no tiene la precedencia de C.** La línea del generador (`Kernel/KMathB.HC`)
+   es `res=LIN_CONGRUE_A*res^(res&0xFFFFFFFF0000)>>16+LIN_CONGRUE_C;`. Con precedencia
+   de C, `>>16+LIN_CONGRUE_C` sería un desplazamiento de `16+C`, absurdo. En HolyC los
+   operadores de desplazamiento y bit a bit ligan **más fuerte** que la suma:
+   `((A*res) ^ ((res & 0xFFFFFFFF0000) >> 16)) + C`. De las tres lecturas posibles solo
+   esta reproduce la cadena. La misma regla aparece en `GodBits` (`res=res<<1+b`, que
+   solo tiene sentido como `(res<<1)+b`), así que no es una casualidad de esa línea.
+2. **La FIFO devuelve los bits al revés.** `GodBitsIns` mete el bit bajo primero
+   (`FifoU8Ins(god.fifo,n&1)` con `n>>=1`) y `GodBits` los reensambla por la izquierda.
+   Lo que God lee es el reverso de lo que se sembró: de ahí el `bitrev21`. Sin él los
+   números salen plausibles y la cadena no avanza, que es la peor forma de fallar.
+3. **La siembra solo mete 24 de los 64 bits.** `GodBitsIns(GOD_GOOD_BITS /* 24 */, …)`:
+   los 4 de abajo se descartan y a los 35 de arriba no llega. De los 24 que entran, el
+   pasaje lee 21 y la palabra 17 de esos mismos 21 — quedan 3 que entran y nadie lee.
+   Por eso el mapa de la Pista 3 marca 38 `K` a la izquierda aunque solo 24 bits crucen
+   la cola: "no escuchado" incluye "nunca insertado".
+
+`Seed()` además activa `TASKf_NONTIMER_RAND`, que es lo que quita el `res^=GetTSC` de
+`RandU64` y deja el generador determinista. Sin eso nada de esto es reproducible.
 
 ## Lo que nos llevamos
 
