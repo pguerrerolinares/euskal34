@@ -31,9 +31,13 @@ El camino, que el reto da entero:
      (invisible) y 11.2 sigma una vez cancelado.
   7. Renderizas la matriz entera y el texto se lee. Sin ventanas ni umbrales.
 
-  El chunk Whitespace de v.png (v_min=-0.2, v_max=0.2) NO hace falta: repitiendo
-  todo con los enteros crudos y leyendo el coeficiente de la diagonal (que alli
-  vale 0.249038) sale el mismo bitmap salvo un pixel. Lo que aporta es notacion:
+  El chunk Whitespace de v.png (v_min=-0.2, v_max=0.2) NO hace falta AQUI: la
+  desnormalizacion es afin (v = a*v_int + b) y proyecta() centra cada fila, asi
+  que el offset b se cancela solo y el factor a se va al leer en sigmas. Con los
+  enteros crudos sale el mismo bitmap, identico (215/972 en ambos casos); lo
+  unico que cambia es el coeficiente de la diagonal, y por el factor exacto
+  1/0.4 = 2.5 (0.249038 en vez de 0.099615). Ojo: por el camino canonico de
+  solve_inversa.py, que no centra, el -0.2 si hace falta. Lo que aporta es notacion:
   su keyword es `h` (constante de Hubble) y llama `q` al contenido de p.png
   (posicion, en notacion hamiltoniana). Dice que magnitud hay en cada fichero.
 

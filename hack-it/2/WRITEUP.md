@@ -242,13 +242,29 @@ alpha = diag(proj(v,q)).mean()                   # 0.099615, el dato escribe su 
 m     = proj(v - alpha*q, q)                     # cancela el derrame de la portadora
 ```
 
+**Esto es un atajo, y conviene decirlo:** proyectar es multiplicar por la *transpuesta*, no por la
+inversa. Las dos coinciden solo si las filas de `q` son ortogonales, y no lo son —de ahí el derrame
+y el paso de cancelación. El despeje canónico es una línea sin trucos, `M = V @ pinv(Q)`, y da lo
+mismo: §8, `solve_inversa.py`.
+
 El divisor `(q·q)` es cosmético (sin dividir, 212 celdas en vez de 216). La ventana de filas y
 columnas y el umbral −3,5σ son cosa nuestra, elegidos a posteriori para tabular controles: para leer
 el texto no hace falta ninguno de los dos.
 
-**El chunk Whitespace no es una llave.** Repitiendo todo con los enteros crudos y leyendo el
-coeficiente de la diagonal (allí 0,249038 = 0,1/0,4) sale el mismo bitmap salvo un píxel: 215/972.
-Lo que aporta es notación — su keyword es `h` (constante de Hubble reducida) y llama `q` al
+**El chunk Whitespace no hace falta —si centras.** Repitiendo todo con los enteros crudos y leyendo
+el coeficiente de la diagonal (allí 0,249038 = 0,1/0,4) sale **el mismo bitmap, idéntico**: 215/972
+celdas en los dos casos, cero píxeles de diferencia. La razón es que la desnormalización es una
+transformación afín `v = a·v_int + b`, y la proyección de aquí centra cada fila: el offset `b` se
+cancela al centrar y el factor `a` es un escalar global que desaparece al leer en sigmas. Por eso
+solo cambia el coeficiente de la diagonal, y por el factor exacto 1/0,4 = 2,5.
+
+El matiz importa porque **por el camino canónico (§8, `solve_inversa.py`) sí hace falta**: allí no
+hay centrado, y sin el `−0,2` la media de `v` no queda en cero, el DC entra en la solución y la
+señal cae de 5,8σ a 3,8σ (124 celdas en vez de 203 — legible, pero degradado). Centrar las filas a
+mano lo sustituye igual de bien (201 celdas). O sea: el `−0,2` no es una llave, es una de las dos
+maneras de poner la media en cero, y cada método la obtiene por un lado.
+
+Lo que el chunk sí aporta es notación — su keyword es `h` (constante de Hubble reducida) y llama `q` al
 contenido de `p.png` (posición, notación hamiltoniana). Dice qué magnitud hay en cada fichero.
 
 **Y este nivel no tuvo pistas del organizador**, al contrario que el 3, donde la Pista 4 era la
@@ -271,7 +287,7 @@ nombre de la fórmula que has tenido que despejar para poder leerla.
 ..#..#...#.....##...#####..      ......#.......####..#......
 ```
 
-Control, celdas bajo −3,5σ: **215 de 972** en la ventana del texto, 14 de 8.244 en esas mismas filas
+Control, celdas bajo −3,5σ: **215 de 972** en la ventana del texto, 13 de 8.244 en esas mismas filas
 fuera de la ventana, y **0 de 5.940** en las filas de fondo dentro de la misma ventana. El dibujo
 aguanta cualquier umbral entre −3 y −5σ.
 
@@ -341,9 +357,56 @@ Las reglas que sí quedan en pie, sustituyendo a la anterior:
 
 ```bash
 python3 solve.py          # la contraseña, dibujada: M4d / F0r / mUL / 4 (+ deja password.png)
+python3 solve_inversa.py  # lo mismo por el camino canónico: m = p·v⁻¹, en una línea
 python3 model.py          # modelo completo + las 4 bandas + comprobaciones de residuo cero
 python3 png16.py p.png    # (256, 256, 3) uint16
 ```
+
+### Dos caminos para el mismo despeje
+
+`solve.py` proyecta (multiplica por la **transpuesta**) y `solve_inversa.py` despeja (multiplica por
+la **inversa**, en la práctica `pinv`). El núcleo del segundo es una línea:
+
+```python
+M = V @ np.linalg.pinv(Q)        # V = M @ Q  ->  M = V·Q⁻¹.  Q es 256x768, rango 256
+```
+
+Sin `alpha`, sin cancelar portadora, sin centrar, sin segunda proyección: escribes la ecuación, la
+despejas y el texto está ahí. La transpuesta es una **aproximación** de la inversa que sería exacta
+si las filas de `q` fueran ortogonales; como se parecen ~1/√768 = 0,036 y la diagonal vale 10 veces
+el mensaje, ese 3,6% de parecido derrama por toda la tabla y lo tapa —el paso `v − alpha·q` es
+justamente lo que la inversa se ahorra, porque descuenta el parecido por construcción.
+
+Medidos con la misma vara (excluyendo de la ventana de control las celdas de la diagonal, que en el
+camino canónico no están canceladas y llegan a 130σ):
+
+| | ruido σ | señal | SNR | celdas a −3,5σ | falsos fuera |
+|---|---|---|---|---|---|
+| `solve.py` (transpuesta) | 0,925 | −5,63σ | 6,1 | 215/972 | 13 |
+| `solve_inversa.py` (inversa) | 0,938 | −5,78σ | 6,2 | 203/972 | **0** |
+
+Empate en calidad —los dos aguantan cualquier umbral de −3 a −7σ—, y la diferencia de celdas es de
+bordes del glifo. Lo que no empata es la exposición: el writeup dice "despejar `m = p/v`" y el
+código canónico literalmente hace eso, mientras que el atajo hace otra cosa que resulta equivalente.
+Esa distancia entre lo que se dice y lo que se ejecuta es de la misma familia que el error de §6.
+
+> **Regla**: si tu código no se parece a la frase con la que explicas el método, la frase o el código
+> están de más. La forma canónica cuesta más FLOPs y menos preguntas.
+
+**Aviso para quien reproduzca: el orden del despeje cambia el signo.** La relación real es `V = M·Q`
+(cada fila de `v` es una combinación de filas de `q`), así que el despeje que funciona es
+`M = V·pinv(Q)` —"v/p"—, no el literal `m = p/v`. Si haces el literal, `Q·pinv(V)`, el texto **sigue
+estando** pero con el signo invertido, porque si `M ≈ 0,1·I + mensaje` entonces
+`M⁻¹ ≈ 10·I − 100·mensaje`:
+
+```
+Q @ pinv(V), buscando celdas bajo -3,5σ :   0 celdas      <- parece que no hay nada
+Q @ pinv(V), buscando celdas sobre +3,5σ: 231 celdas, 13,1σ   <- está, y más marcado
+```
+
+Con el umbral negativo que usa todo el instrumental de aquí, eso da cero y parece que la operación
+ha borrado el mensaje. Es el mismo error de §6 en pequeño: la medición está bien hecha y no
+responde a la pregunta.
 
 Aviso sobre `model.py`: sus "comprobaciones de residuo cero" son las que dieron el falso negativo
 de §6. Se conservan tal cual estaban, sin arreglar, porque forman parte de lo que hay que ver.
@@ -366,6 +429,8 @@ r_real      = v - (0.1*q - 0.09*q.mean(0)[None,:,:])         # sigma = 0.004369
 
 | Fichero | Qué es |
 |---|---|
+| `solve.py` | La solución por proyección (transpuesta + cancelación de la portadora) |
+| `solve_inversa.py` | La misma solución por el despeje canónico, `M = V @ pinv(Q)` |
 | `png16.py` | Decodificador PNG de 16 bits en numpy puro (PIL no lee 16-bit RGB del todo bien) |
 | `model.py` | Modelo completo verificado: ley de Hubble, residuo, bandas y comprobaciones de residuo cero |
 
