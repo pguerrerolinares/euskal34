@@ -264,8 +264,8 @@ El matiz importa porque **por el camino canónico (§8, `solve_inversa.py`) sí 
 tampoco sea una llave: allí no hay centrado, así que la escala no se cancela sola. Con los enteros
 crudos el mensaje se lee igual (219 celdas, verificado), pero la diagonal sale **3,9410** en vez de
 **10,2327**. O sea: la desnormalización completa no abre ninguna puerta, es lo que convierte esa
-diagonal en una masa interpretable (m ~ 10) en vez de un escalar atado a la escala arbitraria de los
-16 bits.
+diagonal en el `1/H` del §3 —10,2327, o sea 1/0,0977— en vez de un escalar atado a la escala
+arbitraria de los 16 bits.
 
 Lo que el chunk sí aporta es notación — su keyword es `h` (constante de Hubble reducida) y llama `q` al
 contenido de `p.png` (posición, notación hamiltoniana). Dice qué magnitud hay en cada fichero.
@@ -383,7 +383,7 @@ justamente lo que la inversa se ahorra, porque descuenta el parecido por constru
 
 Medidos con la misma vara. Ojo con los denominadores del control de fondo: no son el mismo número,
 porque en el camino canónico la diagonal no se cancela en ningún paso y sus celdas valen 124-135σ —
-son la masa, no ruido—, así que las 9 que caen dentro del rango de columnas de la ventana (los
+son el `1/H` del modelo, no ruido—, así que las 9 que caen dentro del rango de columnas de la ventana (los
 huecos 114-117, 127-130 y 140 entre bandas de texto) se excluyen una a una por su máscara diagonal,
 5.940 − 9 = 5.931:
 
@@ -393,7 +393,7 @@ huecos 114-117, 127-130 y 140 entre bandas de texto) se excluyen una a una por s
 | `solve_inversa.py` (inversa, +3,5σ) | 0,919 | +14,0σ | 15,2 | 237/972 | **0** de 5.931 | 19 de 8.244 |
 
 Los dos leen el mismo bitmap y la diferencia de celdas es de bordes del glifo. Donde no empatan es
-en el margen: el orden literal pone la masa en la diagonal y el mensaje en positivo, con dos veces
+en el margen: el orden literal pone el `1/H` en la diagonal y el mensaje en positivo, con dos veces
 y media el SNR del atajo. Y los 19 del canónico no son detección de más — **18 son la propia
 diagonal**: las filas 105-113 y 144-152 tienen su `M[i,i]` fuera del rango de columnas de la
 ventana, así que su ~10 en sigmas se cuela en ese recuento tal cual. Ruido de verdad, 1 celda.
@@ -411,13 +411,14 @@ cosa: si `M ≈ 0,1·I + mensaje`, entonces `M⁻¹ ≈ 10·I − 100·mensaje`,
 invierten a la vez la diagonal y el signo del mensaje.
 
 ```
-P @ pinv(V)   "p entre v", el literal : diagonal 10,2327 = la masa (p = m·v, m~10); mensaje ALTO
-V @ pinv(P)   "v entre p"             : diagonal  0,0996 = 1/masa;                  mensaje BAJO
+P @ pinv(V)   "p entre v", el literal : diagonal 10,2327 = 1/H, el tiempo de §3 ; mensaje ALTO
+V @ pinv(P)   "v entre p"             : diagonal  0,0996 = H, la constante de §3 ; mensaje BAJO
 ```
 
-De los dos, **el literal es el que la fórmula del reto dicta y el que mide mejor**: la diagonal sale
-con sentido físico —una masa, no el inverso de una masa— y el mensaje llega a 14,0σ, 237/972 celdas
-sobre +3,5σ y 0 falsos positivos de 5.931 en las filas de fondo. Es el que hace `solve_inversa.py`.
+De los dos, **el literal es el que la fórmula del reto dicta y el que mide mejor**: el mensaje llega
+a 14,0σ, 237/972 celdas sobre +3,5σ y 0 falsos positivos de 5.931 en las filas de fondo. Es el que
+hace `solve_inversa.py`. En la diagonal, en cambio, no hay nada que elegir: los dos números son el
+mismo dato por sus dos caras, y ninguno de los dos es una masa (ver abajo).
 
 Lo que sí hay que vigilar es el signo del umbral, porque todo el instrumental de este repo nació del
 atajo y busca celdas **negativas**:
@@ -429,6 +430,60 @@ P @ pinv(V), buscando celdas sobre +3,5σ: 237 de 972    <- está, y a 14,0σ
 
 Ese cero no dice nada del método, dice que estás buscando manchas oscuras en un texto que salió en
 claro. Es el mismo error de §6 en pequeño: la medición está bien hecha y no responde a la pregunta.
+
+### La diagonal es un tiempo, no una masa
+
+Corrección de una versión anterior de esta misma sección, que llamaba **masa** al 10,2327 porque el
+título del reto dice `p = m·v`. No lo es, y el §3 ya tenía el nombre bueno: es el **tiempo de
+Hubble**, `1/H`. `1/10,2327 = 0,097726`, que es el `0,1` de la ley `v = 0,1·(q − 0,9·<q>_col)`. El
+mismo número que el §3 usa para poner el "Big Bang" en `t = −10`, y este párrafo existía diciendo lo
+contrario a doce pantallas de distancia.
+
+Tres comprobaciones, ninguna sutil:
+
+```
+M @ V ≈ Q  (M convierte velocidades en posiciones)   ->  [M] = long/(long/tiempo) = TIEMPO
+v negativos: 88.368 de 196.608 (44,95%)  |  p negativos: 0
+q: min 0,0000  max 1,0000  media 0,50021  skew -0,0020  kurt -1,2007  -> uniforme(0,1)
+```
+
+La segunda es la que cierra el asunto sin álgebra: si `p` fuera `m·v` con `m > 0`, los 88.368 valores
+negativos de `v` tendrían que aparecer como 88.368 negativos en `p`, y `p` no tiene ni uno. La
+ecuación del título **no se cumple sobre los píxeles**. Y `q` uniforme en [0,1] con el rango de 16
+bits completo es una caja de partículas repartidas al azar, no un campo de momentos. Lo de 10,23 en
+vez de 10,00 tiene también su explicación en casa: el bug de eje de §4 mete el término `<q>_col`, y
+la diagonal carga con él.
+
+El chiste del nivel no se toca: `p`, `v` y una `m` ausente es lo que te lleva a la operación, y de
+ahí sale la contraseña. Lo que cambia es qué devuelve la operación cuando la ejecutas.
+
+> **Regla**: que un despeje devuelva un número redondo no lo convierte en la magnitud que ibas
+> buscando. Antes de ponerle nombre, mira las dimensiones y mira los signos. Aquí bastaba contar
+> negativos.
+
+### ¿Hacían falta 16 bits?
+
+No. Recuantizando **los dos** PNG al mismo rango declarado y repitiendo el despeje canónico entero:
+
+| bits | diagonal | celdas >3,5σ | distintas vs 16 bit | |
+|---|---|---|---|---|
+| 16 | 10,2327 | 237 | — | |
+| 8 | 10,2303 | 234 | 3 | idéntico a ojo |
+| 5 | 10,0707 | 207 | 34 | todavía legible |
+| 4 | 9,6700 | 86 | 151 | roto |
+
+El mensaje muere entre 5 y 4 bits. A 8 el bitmap sale entero y la pérdida de señal es del 0,7%.
+
+Lo interesante es **por qué sobrevive**, porque no es obvio: una portadora perturba una muestra de
+`v` en 1,4e-3, que a 8 bits son **0,88 pasos de cuantización**. Por debajo del escalón: ella sola se
+redondearía a nada. Aguanta por dos motivos que se suman — cada fila lleva ~6 portadoras a la vez
+(2,3 escalones, ya por encima) y la detección integra las 768 muestras de la fila. Además el ruido
+propio del generador es **6,3×** el error rms de cuantizar a 8 bits, y los ruidos se suman en
+cuadratura: el daño total al suelo de ruido es un **+1,25%**.
+
+O sea que los 16 bits no sostienen la esteganografía. Son el idioma habitual de meter un dataset
+físico en una textura, y punto. Lo llamativo es lo contrario de lo que parece: que el mensaje quepa
+**por debajo de un escalón de 8 bits** y se lea igual.
 
 Aviso sobre `model.py`: sus "comprobaciones de residuo cero" son las que dieron el falso negativo
 de §6. Se conservan tal cual estaban, sin arreglar, porque forman parte de lo que hay que ver.
