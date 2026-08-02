@@ -226,8 +226,10 @@ No es un conejo sacado de la chistera. El nivel lo explica entero, en cuatro pas
    proyectan todas contra todas. El `256×256` del HTML confirma que es una **tabla de todos contra
    todos** y no una división punto a punto — pero ojo, no discrimina la orientación: las cuatro
    posibles dan 256×256.
-4. **ÚNICO PASO NO DEDUCIBLE: ¿la fila o la columna?** Se resuelve probando, una línea cada una:
-   `filas×filas` **216** / `columnas×columnas` 0 / cruzadas 1 y 0. Si ya has caracterizado el
+4. **ÚNICO PASO NO DEDUCIBLE: ¿la fila o la columna?** Se resuelve probando, una línea cada una.
+   Con el criterio de este camino —`solve.py` entero, celdas bajo −3,5σ, z contra el fondo y sin
+   contar la diagonal— salen **201 / 12 / 14 / 8** para `p` filas × `v` filas, `p` filas × `v`
+   columnas, `p` columnas × `v` filas y `p` columnas × `v` columnas. Si ya has caracterizado el
    residuo, el dato orienta antes de probar: exceso de desviación por filas 0,1160 contra 0,0526 por
    columnas, y las filas con exceso están en cuatro bloques contiguos de nueve mientras que las
    columnas están dispersas.
@@ -249,9 +251,32 @@ inversa. Las dos coinciden solo si las filas de `q` son ortogonales, y no lo son
 y el paso de cancelación. El despeje canónico es una línea sin trucos, `M = P @ pinv(V)` —el orden
 literal de la fórmula—, y lee el mismo texto: §8, `solve_inversa.py`.
 
-El divisor `(q·q)` es cosmético (sin dividir, 212 celdas en vez de 216). La ventana de filas y
-columnas y el umbral −3,5σ son cosa nuestra, elegidos a posteriori para tabular controles: para leer
-el texto no hace falta ninguno de los dos.
+El divisor `(q·q)` es cosmético: con el criterio del paso 4, **201** celdas con él y **202** sin él.
+La ventana de filas y columnas y el umbral −3,5σ son cosa nuestra, elegidos a posteriori para
+tabular controles: para leer el texto no hace falta ninguno de los dos.
+
+**Nota de instrumento.** El paso 4 decía antes `216 / 0 / 1 y 0`, y el divisor, `212 celdas en vez
+de 216`. Esas cifras son de julio y **no son reproducibles**: no salen por ninguno de los dos
+caminos del repo, y el script que las produjo no se conservó. Es el fallo de §6 otra vez, en
+pequeño: un número bien calculado en su día del que ya no se puede decir qué medía. Las de ahora
+están medidas con el código de este directorio, y como el recuento depende del camino y del umbral,
+van las tres combinaciones que tienen sentido:
+
+| medición | p fil × v fil | p fil × v col | p col × v fil | p col × v col |
+|---|---|---|---|---|
+| `solve.py` (transpuesta), celdas bajo −3,5σ | **201** | 12 | 14 | 8 |
+| `solve.py` (transpuesta), abs(z) > 3,5σ | **222** | 30 | 31 | 21 |
+| `solve_inversa.py` (pinv), abs(z) > 3,5σ | **220** | 30 | 28 | 5 |
+
+En las tres, z se toma contra la media y la desviación del fondo, y ni la normalización ni el
+recuento incluyen la diagonal. La primera es la que usa este §6b, porque es lo que `solve.py`
+ejecuta y sus letras salen en negativo; la tercera es la que cita el writeup divulgativo. Ninguna
+cambia la conclusión —la orientación buena gana por un orden de magnitud en las tres—, pero son tres
+instrumentos distintos y el número solo significa algo con el suyo al lado.
+
+> **Regla**: una cifra sin el instrumento que la produjo no es un dato, es una anécdota. Si el
+> script no se conserva, el número no se puede volver a citar; y si además nadie declara el
+> criterio, dos medidas legítimas del mismo experimento parecen una contradicción.
 
 **El chunk Whitespace no hace falta —si centras.** Repitiendo todo con los enteros crudos y leyendo
 el coeficiente de la diagonal (allí 0,249038 = 0,1/0,4) sale **el mismo bitmap, idéntico**: 215/972
