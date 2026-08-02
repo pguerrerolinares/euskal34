@@ -184,9 +184,11 @@ es de máxima entropía y resiste todo lo que se le eche encima porque es exacta
 ruido.~~
 
 **Falso.** Las cuatro bandas de nueve filas son las cuatro líneas del texto, y el exceso de varianza
-es la huella que deja el mecanismo: el autor sumó a esas 36 filas de `v` múltiplos minúsculos de
-ciertas filas de `p`, y sumar portadoras sube la varianza de la fila. Medimos la sombra del mensaje
-con tres decimales y le pusimos el nombre equivocado.
+es la huella que deja el mecanismo: el autor **restó** a esas 36 filas de `v` múltiplos minúsculos de
+ciertas filas de `p` —coeficiente medio **−0,00519**, el **97% negativos**—, y meterle a una fila una
+portadora, con el signo que sea, sube su varianza. La magnitud del múltiplo da la escala del
+problema: 0,00519 contra el 0,0996 del término físico que lo tapa, **1/19 de lo que hay encima**.
+Medimos la sombra del mensaje con tres decimales y le pusimos el nombre equivocado.
 
 El fallo se puede señalar con el dedo. La comprobación de "no queda nada" medía la estructura por
 columna promediando sobre las **256 filas**:
@@ -244,8 +246,8 @@ m     = proj(v - alpha*q, q)                     # cancela el derrame de la port
 
 **Esto es un atajo, y conviene decirlo:** proyectar es multiplicar por la *transpuesta*, no por la
 inversa. Las dos coinciden solo si las filas de `q` son ortogonales, y no lo son —de ahí el derrame
-y el paso de cancelación. El despeje canónico es una línea sin trucos, `M = V @ pinv(Q)`, y da lo
-mismo: §8, `solve_inversa.py`.
+y el paso de cancelación. El despeje canónico es una línea sin trucos, `M = P @ pinv(V)` —el orden
+literal de la fórmula—, y lee el mismo texto: §8, `solve_inversa.py`.
 
 El divisor `(q·q)` es cosmético (sin dividir, 212 celdas en vez de 216). La ventana de filas y
 columnas y el umbral −3,5σ son cosa nuestra, elegidos a posteriori para tabular controles: para leer
@@ -258,11 +260,12 @@ transformación afín `v = a·v_int + b`, y la proyección de aquí centra cada 
 cancela al centrar y el factor `a` es un escalar global que desaparece al leer en sigmas. Por eso
 solo cambia el coeficiente de la diagonal, y por el factor exacto 1/0,4 = 2,5.
 
-El matiz importa porque **por el camino canónico (§8, `solve_inversa.py`) sí hace falta**: allí no
-hay centrado, y sin el `−0,2` la media de `v` no queda en cero, el DC entra en la solución y la
-señal cae de 5,8σ a 3,8σ (124 celdas en vez de 203 — legible, pero degradado). Centrar las filas a
-mano lo sustituye igual de bien (201 celdas). O sea: el `−0,2` no es una llave, es una de las dos
-maneras de poner la media en cero, y cada método la obtiene por un lado.
+El matiz importa porque **por el camino canónico (§8, `solve_inversa.py`) sí hace algo**, aunque
+tampoco sea una llave: allí no hay centrado, así que la escala no se cancela sola. Con los enteros
+crudos el mensaje se lee igual (219 celdas, verificado), pero la diagonal sale **3,9410** en vez de
+**10,2327**. O sea: la desnormalización completa no abre ninguna puerta, es lo que convierte esa
+diagonal en una masa interpretable (m ~ 10) en vez de un escalar atado a la escala arbitraria de los
+16 bits.
 
 Lo que el chunk sí aporta es notación — su keyword es `h` (constante de Hubble reducida) y llama `q` al
 contenido de `p.png` (posición, notación hamiltoniana). Dice qué magnitud hay en cada fichero.
@@ -359,6 +362,7 @@ Las reglas que sí quedan en pie, sustituyendo a la anterior:
 python3 solve.py          # la contraseña, dibujada: M4d / F0r / mUL / 4 (+ deja password.png)
 python3 solve_inversa.py  # lo mismo por el camino canónico: m = p·v⁻¹, en una línea
 python3 model.py          # modelo completo + las 4 bandas + comprobaciones de residuo cero
+python3 whitespace.py     # decodifica el chunk oculto de v.png, instruccion a instruccion
 python3 png16.py p.png    # (256, 256, 3) uint16
 ```
 
@@ -368,7 +372,7 @@ python3 png16.py p.png    # (256, 256, 3) uint16
 la **inversa**, en la práctica `pinv`). El núcleo del segundo es una línea:
 
 ```python
-M = V @ np.linalg.pinv(Q)        # V = M @ Q  ->  M = V·Q⁻¹.  Q es 256x768, rango 256
+M = P @ np.linalg.pinv(V)        # p = m·v  ->  M = P·V⁻¹.  V es 256x768, rango 256
 ```
 
 Sin `alpha`, sin cancelar portadora, sin centrar, sin segunda proyección: escribes la ecuación, la
@@ -377,49 +381,83 @@ si las filas de `q` fueran ortogonales; como se parecen ~1/√768 = 0,036 y la d
 el mensaje, ese 3,6% de parecido derrama por toda la tabla y lo tapa —el paso `v − alpha·q` es
 justamente lo que la inversa se ahorra, porque descuenta el parecido por construcción.
 
-Medidos con la misma vara (excluyendo de la ventana de control las celdas de la diagonal, que en el
-camino canónico no están canceladas y llegan a 130σ):
+Medidos con la misma vara. Ojo con los denominadores del control de fondo: no son el mismo número,
+porque en el camino canónico la diagonal no se cancela en ningún paso y sus celdas valen 124-135σ —
+son la masa, no ruido—, así que las 9 que caen dentro del rango de columnas de la ventana (los
+huecos 114-117, 127-130 y 140 entre bandas de texto) se excluyen una a una por su máscara diagonal,
+5.940 − 9 = 5.931:
 
-| | ruido σ | señal | SNR | celdas a −3,5σ | falsos fuera |
-|---|---|---|---|---|---|
-| `solve.py` (transpuesta) | 0,925 | −5,63σ | 6,1 | 215/972 | 13 |
-| `solve_inversa.py` (inversa) | 0,938 | −5,78σ | 6,2 | 203/972 | **0** |
+| | ruido σ | señal | SNR | celdas sobre umbral | fondo, mismas cols | esas filas, otras cols |
+|---|---|---|---|---|---|---|
+| `solve.py` (transpuesta, −3,5σ) | 0,925 | −5,63σ | 6,1 | 215/972 | **0** de 5.940 | 13 de 8.244 |
+| `solve_inversa.py` (inversa, +3,5σ) | 0,919 | +14,0σ | 15,2 | 237/972 | **0** de 5.931 | 19 de 8.244 |
 
-Empate en calidad —los dos aguantan cualquier umbral de −3 a −7σ—, y la diferencia de celdas es de
-bordes del glifo. Lo que no empata es la exposición: el writeup dice "despejar `m = p/v`" y el
-código canónico literalmente hace eso, mientras que el atajo hace otra cosa que resulta equivalente.
-Esa distancia entre lo que se dice y lo que se ejecuta es de la misma familia que el error de §6.
+Los dos leen el mismo bitmap y la diferencia de celdas es de bordes del glifo. Donde no empatan es
+en el margen: el orden literal pone la masa en la diagonal y el mensaje en positivo, con dos veces
+y media el SNR del atajo. Y los 19 del canónico no son detección de más — **18 son la propia
+diagonal**: las filas 105-113 y 144-152 tienen su `M[i,i]` fuera del rango de columnas de la
+ventana, así que su ~10 en sigmas se cuela en ese recuento tal cual. Ruido de verdad, 1 celda.
+
+Lo que menos empata es la exposición: el writeup dice "despejar `m = p/v`" y el código canónico
+literalmente hace eso, mientras que el atajo hace otra cosa que resulta equivalente. Esa distancia
+entre lo que se dice y lo que se ejecuta es de la misma familia que el error de §6.
 
 > **Regla**: si tu código no se parece a la frase con la que explicas el método, la frase o el código
 > están de más. La forma canónica cuesta más FLOPs y menos preguntas.
 
-**Aviso para quien reproduzca: el orden del despeje cambia el signo.** La relación real es `V = M·Q`
-(cada fila de `v` es una combinación de filas de `q`), así que el despeje que funciona es
-`M = V·pinv(Q)` —"v/p"—, no el literal `m = p/v`. Si haces el literal, `Q·pinv(V)`, el texto **sigue
-estando** pero con el signo invertido, porque si `M ≈ 0,1·I + mensaje` entonces
-`M⁻¹ ≈ 10·I − 100·mensaje`:
+**Aviso para quien reproduzca: los dos órdenes funcionan, y dan resultados espejo.** `p/v` y `v/p`
+son la misma información por sus dos caras, y ninguno borra nada. Lo que cambia es dónde queda cada
+cosa: si `M ≈ 0,1·I + mensaje`, entonces `M⁻¹ ≈ 10·I − 100·mensaje`, así que al invertir el orden se
+invierten a la vez la diagonal y el signo del mensaje.
 
 ```
-Q @ pinv(V), buscando celdas bajo -3,5σ :   0 celdas      <- parece que no hay nada
-Q @ pinv(V), buscando celdas sobre +3,5σ: 231 celdas, 13,1σ   <- está, y más marcado
+P @ pinv(V)   "p entre v", el literal : diagonal 10,2327 = la masa (p = m·v, m~10); mensaje ALTO
+V @ pinv(P)   "v entre p"             : diagonal  0,0996 = 1/masa;                  mensaje BAJO
 ```
 
-Con el umbral negativo que usa todo el instrumental de aquí, eso da cero y parece que la operación
-ha borrado el mensaje. Es el mismo error de §6 en pequeño: la medición está bien hecha y no
-responde a la pregunta.
+De los dos, **el literal es el que la fórmula del reto dicta y el que mide mejor**: la diagonal sale
+con sentido físico —una masa, no el inverso de una masa— y el mensaje llega a 14,0σ, 237/972 celdas
+sobre +3,5σ y 0 falsos positivos de 5.931 en las filas de fondo. Es el que hace `solve_inversa.py`.
+
+Lo que sí hay que vigilar es el signo del umbral, porque todo el instrumental de este repo nació del
+atajo y busca celdas **negativas**:
+
+```
+P @ pinv(V), buscando celdas bajo -3,5σ :   0 de 972    <- parece que no hay nada
+P @ pinv(V), buscando celdas sobre +3,5σ: 237 de 972    <- está, y a 14,0σ
+```
+
+Ese cero no dice nada del método, dice que estás buscando manchas oscuras en un texto que salió en
+claro. Es el mismo error de §6 en pequeño: la medición está bien hecha y no responde a la pregunta.
 
 Aviso sobre `model.py`: sus "comprobaciones de residuo cero" son las que dieron el falso negativo
 de §6. Se conservan tal cual estaban, sin arreglar, porque forman parte de lo que hay que ver.
 
-```python
-# el texto oculto en Whitespace de v.png
-import struct
-d = open('v.png','rb').read(); i = 8
-while i < len(d):
-    ln = struct.unpack('>I', d[i:i+4])[0]; typ = d[i+4:i+8]
-    if typ == b'tEXt': print(d[i+8:i+8+ln])
-    i += 12 + ln
+Aquí había un snippet de tres líneas que recorría los chunks y volcaba el `tEXt` crudo. Lo hace
+`whitespace.py`, que además lo **interpreta**: Whitespace no es un cifrado, es un lenguaje, así que
+el chunk no se descifra, se ejecuta. El script enseña el paso intermedio —caracteres invisibles
+pintados, bits, decimal, carácter—, que es justo lo que faltaba para ver de dónde sale el mensaje:
+
 ```
+$ python3 whitespace.py
+chunk tEXt en v.png: keyword='h', 392 bytes de contenido
+  espacios=215  tabuladores=120  saltos=57  (total=392)
+
+···→→→···→     push  1110001 = 113  ->  'q'
+···→·····      push  100000 =  32  ->  ' '
+···→→→·→→·     push  1110110 = 118  ->  'v'
+···→·→→→→→     push  1011111 =  95  ->  '_'
+[... 27 pares push+output, uno por carácter ...]
+↵↵↵            end   (fin de programa)
+
+salida completa: 'q v_min = -0.2, v_max = 0.2'
+```
+
+Los tres saltos finales no son relleno: son el `END` de Whitespace, y el script los nombra en vez de
+tratarlos como sobras. Y ante cualquier instrucción que no implemente **para**, diciendo cuál es y en
+qué byte, en lugar de saltársela y seguir. En un writeup cuyo tema es haber sacado una conclusión de
+una medición que no respondía a la pregunta, un decodificador que se niega a ignorar lo que no
+entiende no es un capricho.
 
 ```python
 # el bug de eje, en dos lineas
@@ -430,9 +468,10 @@ r_real      = v - (0.1*q - 0.09*q.mean(0)[None,:,:])         # sigma = 0.004369
 | Fichero | Qué es |
 |---|---|
 | `solve.py` | La solución por proyección (transpuesta + cancelación de la portadora) |
-| `solve_inversa.py` | La misma solución por el despeje canónico, `M = V @ pinv(Q)` |
+| `solve_inversa.py` | La misma solución por el despeje canónico y literal, `M = P @ pinv(V)` |
 | `png16.py` | Decodificador PNG de 16 bits en numpy puro (PIL no lee 16-bit RGB del todo bien) |
 | `model.py` | Modelo completo verificado: ley de Hubble, residuo, bandas y comprobaciones de residuo cero |
+| `whitespace.py` | Extrae el chunk `tEXt` de `v.png` sin PIL y ejecuta el programa Whitespace que lleva dentro, con la traza instrucción a instrucción (bits → decimal → carácter). Implementa `push`, `output char` y `end`; ante cualquier otra para y dice cuál y en qué byte. Acepta el PNG como argumento, `v.png` por defecto |
 
 Los dos assets del reto, `p.png` y `v.png`, van aquí al lado, así que `model.py` corre tal cual sin
 descargar nada. `m.png` no hace falta buscarla: devuelve 404, que es justo el chiste.
